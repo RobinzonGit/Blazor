@@ -1,42 +1,63 @@
 ﻿@page "/todo"
 @rendermode InteractiveServer
- 
-<PageTitle>TODO</PageTitle>
- 
-<h3>TODO</h3>
-<div class="statistics">
-	<h4>Всего заданий: @tasklist.Count</h4>
-	<h5>Выполненых заданий: @tasklist.Where(task => task.DONE==true).ToList().Count</h5>
-	<h6>Осталось заданий: @tasklist.Where(t => t.DONE==false).ToList().Count</h6>
-</div>
-<input placeholder="Новая задача" @bind="task"@onkeyup="Enter" />
-<button @onclick="AddTask">Добавить</button>
- 
-<ul class="tasklist">
-	@foreach (TODOitem i in tasklist)
-	{
-		<li>
-		<input type="checkbox" @bind="@i.DONE" id="@i.Title"/>
-		<label for="@i.Title" class=@(i.DONE ? "done" : "")>@i.Title</label>
-		</li>
-	}
-</ul>
- 
-@code
-{
-	List<TODOitem> tasklist = [];
-	string task;
-	void AddTask()
-	{
-		if (!string.IsNullOrWhiteSpace(task) && !tasklist.Contains(new TODOitem { Title = task}))
-		{
-			tasklist.Add(new TODOitem { Title = task });
-			task = "";
-		}
-	}
-	void Enter(KeyboardEventArgs e)
-	{
-		if (e.Key == "Enter") AddTask();
-	}
 
+<PageTitle>TODO</PageTitle>
+
+<h3>TODO</h3>
+
+<div class="statistics">
+    <h4>Всего заданий: @tasklist.Count</h4>
+    <h5>Выполненных заданий: @tasklist.Where(task => task.DONE).Count()</h5>
+    <h6>Осталось заданий: @tasklist.Where(t => !t.DONE).Count()</h6>
+</div>
+
+<input placeholder="Новая задача" @bind="task" @onkeyup="Enter" />
+<button @onclick="AddTask">Добавить</button>
+<button @onclick="DeleteCompletedTasks">Удалить выполненные</button>
+
+<ul class="tasklist">
+    @foreach (TODOitem i in tasklist)
+    {
+        <li>
+            <input type="checkbox" @bind="@i.DONE" id="@i.Title" />
+            <label for="@i.Title" class=@(i.DONE ? "done" : "")>@i.Title</label>
+            <button @onclick="() => DeleteTask(i)">Удалить</button>
+        </li>
+    }
+</ul>
+
+@code {
+    List<TODOitem> tasklist = new();
+    string task = string.Empty;
+
+    void AddTask()
+    {
+        if (!string.IsNullOrWhiteSpace(task) && !tasklist.Any(t => t.Title == task))
+        {
+            tasklist.Add(new TODOitem { Title = task });
+            task = "";
+        }
+    }
+
+    void Enter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            AddTask();
+    }
+
+    void DeleteTask(TODOitem item)
+    {
+        tasklist.Remove(item);
+    }
+
+    void DeleteCompletedTasks()
+    {
+        tasklist.RemoveAll(t => t.DONE);
+    }
+
+    public class TODOitem
+    {
+        public string Title { get; set; } = "";
+        public bool DONE { get; set; }
+    }
 }
