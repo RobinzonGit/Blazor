@@ -1,0 +1,10 @@
+﻿@page "/factorial"
+@rendermode InteractiveServer
+
+<PageTitle>Factorial</PageTitle>
+<h3>Factorial</h3>
+<div class="factorial">
+    <input type="number" min="0" max="50" @bind="n" @bind:after="Calculate" />
+    <div class="factorial-result">@n! = @factorial</div>
+</div>
+

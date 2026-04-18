@@ -1,0 +1,31 @@
+﻿@rendermode InteractiveServer
+@page "/dec2bin"
+@layout MainLayout
+@using NumericsAPP.Components.Shared
+
+<Numerics>
+    <h3>Десятичное → Двоичное</h3>
+    <div class="form-group">
+        <label>Введите десятичное число:</label>
+        <input type="number" @bind="decimalInput" @onkeyup="Enter" />
+    </div>
+    <button @onclick="Convert">Перевести</button>
+    @if (!string.IsNullOrEmpty(result))
+    {
+        <div class="result">Результат: 0b @result</div>
+    }
+</Numerics>
+
+@code {
+    private string decimalInput = "";
+    private string result = "";
+
+    private void Convert()
+    {
+        result = Numerics.Dec2Bin(decimalInput);
+    }
+    void Enter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") Convert();
+    }
+}

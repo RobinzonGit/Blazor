@@ -1,0 +1,31 @@
+﻿@rendermode InteractiveServer
+@page "/hex2dec"
+@layout MainLayout
+@using NumericsAPP.Components.Shared
+
+<Numerics>
+    <h3>Шестнадцатеричное → Десятичное</h3>
+    <div class="form-group">
+        <label>Введите шестнадцатеричное число (0-9, A-F):</label>
+        <input type="text" @bind="hexInput" @onkeyup="Enter" />
+    </div>
+    <button @onclick="Convert">Перевести</button>
+    @if (!string.IsNullOrEmpty(result))
+    {
+        <div class="result">Результат: @result</div>
+    }
+</Numerics>
+
+@code {
+    private string hexInput = "";
+    private string result = "";
+
+    private void Convert()
+    {
+        result = Numerics.Hex2Dec(hexInput);
+    }
+    void Enter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") Convert();
+    }
+}

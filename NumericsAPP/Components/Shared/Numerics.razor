@@ -1,0 +1,94 @@
+﻿@rendermode InteractiveServer
+<h3>Numerics</h3>
+@* Общая обёртка для страниц конвертеров *@
+<div class="numerics-container">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // ===== Методы преобразований =====
+
+    // 1. Dec -> Bin
+    public static string Dec2Bin(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return "Ошибка: введите число";
+        if (!long.TryParse(input, out long dec))
+            return "Ошибка: некорректное десятичное число";
+        if (dec < 0) 
+            return "Ошибка: отрицательные числа не поддерживаются";
+        return Convert.ToString(dec, 2);
+    }
+
+    // 2. Dec -> Hex
+    public static string Dec2Hex(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return "Ошибка: введите число";
+        if (!long.TryParse(input, out long dec))
+            return "Ошибка: некорректное десятичное число";
+        if (dec < 0)
+            return "Ошибка: отрицательные числа не поддерживаются";
+        return Convert.ToString(dec, 16).ToUpper();
+    }
+
+    // 3. Bin -> Dec
+    public static string Bin2Dec(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return "Ошибка: введите двоичное число";
+        foreach (char c in input)
+            if (c != '0' && c != '1')
+                return "Ошибка: двоичное число может содержать только 0 и 1";
+        try
+        {
+            long dec = Convert.ToInt64(input, 2);
+            return dec.ToString();
+        }
+        catch (OverflowException)
+        {
+            return "Ошибка: число слишком большое";
+        }
+    }
+
+    // 4. Hex -> Dec
+    public static string Hex2Dec(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return "Ошибка: введите шестнадцатеричное число";
+        try
+        {
+            long dec = Convert.ToInt64(input, 16);
+            return dec.ToString();
+        }
+        catch (FormatException)
+        {
+            return "Ошибка: некорректное шестнадцатеричное число (0-9, A-F)";
+        }
+        catch (OverflowException)
+        {
+            return "Ошибка: число слишком большое";
+        }
+    }
+
+    // 5. Bin -> Hex
+    public static string Bin2Hex(string input)
+    {
+        string decStr = Bin2Dec(input);
+        if (decStr.StartsWith("Ошибка"))
+            return decStr;
+        return Dec2Hex(decStr);
+    }
+
+    // 6. Hex -> Bin
+    public static string Hex2Bin(string input)
+    {
+        string decStr = Hex2Dec(input);
+        if (decStr.StartsWith("Ошибка"))
+            return decStr;
+        return Dec2Bin(decStr);
+    }
+
+}

@@ -1,0 +1,32 @@
+﻿@rendermode InteractiveServer
+@page "/hex2bin"
+@layout MainLayout
+@using NumericsAPP.Components.Shared
+
+<Numerics>
+    <h3>Шестнадцатеричное → Двоичное</h3>
+    <div class="form-group">
+        <label>Введите шестнадцатеричное число (0-9,a-f, A-F):</label>
+        <input type="text" @bind="hexInput" @onkeyup="Enter" /> 
+    </div>
+       <button @onclick="Convert">Перевести</button>
+    @if (!string.IsNullOrEmpty(result))
+    {
+        <div class="result">Результат: 0b @result</div>
+    }
+</Numerics>
+
+@code {
+    // Код реализации Enter
+    private string hexInput = "";
+    private string result = "";
+
+    private void Convert()// Фунция клика по кнопке нажатием на клавиатуре Enter
+    {
+        result = Numerics.Hex2Bin(hexInput);
+    }
+    void Enter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") Convert();
+    }
+}
