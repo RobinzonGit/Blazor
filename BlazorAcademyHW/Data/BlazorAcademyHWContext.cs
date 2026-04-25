@@ -19,5 +19,7 @@ namespace BlazorAcademyHW.Data
         
         public DbSet<BlazorAcademyHW.Models.Groups> Groups { get; set; } = default!;
        
+        
+       
     }
 }
