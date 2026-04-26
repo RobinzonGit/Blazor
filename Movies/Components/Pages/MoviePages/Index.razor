@@ -13,25 +13,26 @@
 <p>
     <a href="movies/create">Create New</a>
 </p>
-<form action="/movies" data-enhance>
-    <input type="search" name="titleFilter" />
-    <input type="submit" value="Search" />
+<div class="controls">
+    <form action="/movies" data-enhance>
+        <input type="search" name="titleFilter" />
+        <input type="submit" value="Search" />
     </form>
     <div>
-        <link for="items-per-page" >Колличество фильмов на странице:< label/>
-    <select id="item-per-page" @bind="pagination.ItemsPerPage">
-    <option value="3">3</option>
-    <option value="5">5</option>
-    <option value="8">8</option>
-    <option value="10">10</option>
-</select>
+        <label for="items-per-page">Колличество фильмов на странице:</label>
+        <select id="item-per-page" @bind="pagination.ItemsPerPage">
+            <option value="3">3</option>
+            <option value="5">5</option>
+            <option value="8">8</option>
+            <option value="10">10</option>
+        </select>
     </div>
+</div>
 
-<QuickGrid Class="table" Items="FilteredMovies"
-    Pagination="pagination">
-    <PropertyColumn Sortable="true" Property="movie => movie.Title" />
-    <PropertyColumn Sortable="true" Property="movie => movie.ReleaseDate" />
-    <PropertyColumn Sortable="true" Property="movie => movie.Genre" />
+<QuickGrid Class="table" Items="FilteredMovies" Pagination="pagination">
+    <PropertyColumn Class="movie-title" Sortable="true" Property="movie => movie.Title" />
+    <PropertyColumn Class="releas-date"Sortable="true" Property="movie => movie.ReleaseDate" />
+    <PropertyColumn Class="genre" Sortable="true" Property="movie => movie.Genre" />
 
     <TemplateColumn Context="movie">
         <a href="@($"movies/edit?id={movie.Id}")">Edit</a> |
@@ -39,7 +40,7 @@
         <a href="@($"movies/delete?id={movie.Id}")">Delete</a>
     </TemplateColumn>
 </QuickGrid>
-<Paginator State ="pagination" />
+<Paginator State="pagination" />
 
 @code {
     private MoviesContext context = default!;
