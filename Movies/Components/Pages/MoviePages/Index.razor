@@ -17,8 +17,18 @@
     <input type="search" name="titleFilter" />
     <input type="submit" value="Search" />
     </form>
+    <div>
+        <link for="items-per-page" >Колличество фильмов на странице:< label/>
+    <select id="item-per-page" @bind="pagination.ItemsPerPage">
+    <option value="3">3</option>
+    <option value="5">5</option>
+    <option value="8">8</option>
+    <option value="10">10</option>
+</select>
+    </div>
 
-<QuickGrid Class="table" Items="FilteredMovies">
+<QuickGrid Class="table" Items="FilteredMovies"
+    Pagination="pagination">
     <PropertyColumn Sortable="true" Property="movie => movie.Title" />
     <PropertyColumn Sortable="true" Property="movie => movie.ReleaseDate" />
     <PropertyColumn Sortable="true" Property="movie => movie.Genre" />
@@ -29,11 +39,14 @@
         <a href="@($"movies/delete?id={movie.Id}")">Delete</a>
     </TemplateColumn>
 </QuickGrid>
+<Paginator State ="pagination" />
 
 @code {
     private MoviesContext context = default!;
     [SupplyParameterFromQuery]
     string? TitleFilter { get; set; }
+
+    PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
 
     protected override void OnInitialized()
     {
