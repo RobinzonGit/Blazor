@@ -40,8 +40,6 @@ namespace BlazorAcademyHW.Models
         public string? Phone { get; set; }
         public string? Photo { get; set; }
         public DateTime WorkSince { get; set; }
-
-        //[Column("rate")]
         public int Rate { get; set; }
 
 
