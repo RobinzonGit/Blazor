@@ -16,7 +16,7 @@
 
 <QuickGrid Class="table" Items="context.Disciplines">
     <PropertyColumn Property="disciplines => disciplines.Name" />
-    <PropertyColumn Property="disciplines => disciplines.of_lessons" />
+    <PropertyColumn Property="disciplines => disciplines.Lessons" />
 
     <TemplateColumn Context="disciplines">
         <a href="@($"disciplines/edit?id={disciplines.Id}")">Edit</a> |

@@ -21,7 +21,7 @@ else
             <EditForm method="post" Model="Directions" OnValidSubmit="UpdateDirections" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
                 <ValidationSummary role="alert"/>
-                <input readonly name="Directions.Id" value="@Directions.Id" />
+                <input type="hidden" name="Directions.Id" value="@Directions.Id" />
                 <div class="mb-3">
                 <span class="text-danger">*</span>
                     <label for="name" class="form-label">Name:</label>

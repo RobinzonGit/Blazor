@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using BlazorAcademyHW.Data;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<BlazorAcademyHWContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BlazorAcademyHWContext") ?? throw new InvalidOperationException("Connection string 'BlazorAcademyHWContext' not found.")));

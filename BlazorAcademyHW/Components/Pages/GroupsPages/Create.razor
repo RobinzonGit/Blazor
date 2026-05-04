@@ -23,7 +23,7 @@
             </div>        
             <div class="mb-3">
                 <label for="direction" class="form-label">Direction:</label> 
-                <InputNumber id="direction" @bind-Value="Groups.Direction" class="form-control" /> 
+                <InputText id="direction" @bind-Value="Groups.Direction" class="form-control" /> 
                 <ValidationMessage For="() => Groups.Direction" class="text-danger" /> 
             </div>        
             <button type="submit" class="btn btn-primary">Create</button>

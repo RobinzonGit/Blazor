@@ -15,14 +15,15 @@
 </p>
 
 <QuickGrid Class="table" Items="context.Teachers">
-    <PropertyColumn Property="teachers => teachers.last_Name" />
-    <PropertyColumn Property="teachers => teachers.first_Nam" />
-    <PropertyColumn Property="teachers => teachers.middle_name" />
+    <PropertyColumn Property="teachers => teachers.LastName" />
+    <PropertyColumn Property="teachers => teachers.FirstName" />
+    <PropertyColumn Property="teachers => teachers.MiddleName" />
     <PropertyColumn Property="teachers => teachers.DateOfBirth" />
-    <PropertyColumn Property="teachers => teachers.email" />
-    <PropertyColumn Property="teachers => teachers.phone" />
-    <PropertyColumn Property="teachers => teachers.photo" />
-    <PropertyColumn Property="teachers => teachers.Work_since" />
+    <PropertyColumn Property="teachers => teachers.Email" />
+    <PropertyColumn Property="teachers => teachers.Phone" />
+    <PropertyColumn Property="teachers => teachers.Photo" />
+    <PropertyColumn Property="teachers => teachers.WorkSince" />
+    <PropertyColumn Property="teachers => teachers.Rate" />
 
     <TemplateColumn Context="teachers">
         <a href="@($"teachers/edit?id={teachers.Id}")">Edit</a> |

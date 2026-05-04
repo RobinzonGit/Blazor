@@ -21,7 +21,7 @@ else
             <EditForm method="post" Model="Disciplines" OnValidSubmit="UpdateDisciplines" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
                 <ValidationSummary role="alert"/>
-                <input readonly name="Disciplines.Id" value="@Disciplines.Id" />
+                <input type="hidden" name="Disciplines.Id" value="@Disciplines.Id" />
                 <div class="mb-3">
                 <span class="text-danger">*</span>
                     <label for="name" class="form-label">Name:</label>
@@ -29,9 +29,9 @@ else
                     <ValidationMessage For="() => Disciplines.Name" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="of_lessons" class="form-label">of_lessons:</label>
-                    <InputNumber id="of_lessons" @bind-Value="Disciplines.of_lessons" class="form-control" />
-                    <ValidationMessage For="() => Disciplines.of_lessons" class="text-danger" />
+                    <label for="lessons" class="form-label">Lessons:</label>
+                    <InputNumber id="lessons" @bind-Value="Disciplines.Lessons" class="form-control" />
+                    <ValidationMessage For="() => Disciplines.Lessons" class="text-danger" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
