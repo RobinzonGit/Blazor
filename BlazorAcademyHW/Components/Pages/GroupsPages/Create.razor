@@ -4,46 +4,81 @@
 @inject IDbContextFactory<BlazorAcademyHW.Data.BlazorAcademyHWContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Create</PageTitle>
+<PageTitle>Create Group</PageTitle>
 
-<h1>Create</h1>
+<h1>Create Group</h1>
 
-<h2>Groups</h2>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <EditForm method="post" Model="Groups" OnValidSubmit="AddGroups" FormName="create" Enhance>
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert"/>
-            <div class="mb-3">
-                <span class="text-danger">*</span>
-                <label for="name" class="form-label">Name:</label> 
-                <InputText id="name" @bind-Value="Groups.Name" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Groups.Name" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="direction" class="form-label">Direction:</label> 
-                <InputText id="direction" @bind-Value="Groups.Direction" class="form-control" /> 
-                <ValidationMessage For="() => Groups.Direction" class="text-danger" /> 
-            </div>        
-            <button type="submit" class="btn btn-primary">Create</button>
-        </EditForm>
+<EditForm Model="@group" OnValidSubmit="CreateGroup" FormName="createGroup" Enhance>
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <InputText @bind-Value="group.Name" class="form-control" />
     </div>
-</div>
 
-<div>
-    <a href="/groups">Back to List</a>
-</div>
+    <div class="mb-3">
+        <label class="form-label">Direction</label>
+        <select @bind="group.DirectionId" class="form-select">
+            <option value="0">-- Select Direction --</option>
+            @foreach (var dir in directions)
+            {
+                <option value="@dir.Id">@dir.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Study Days</label>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var day in studyDaysOptions)
+            {
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" @bind="day.Selected" id="day_@day.Value" />
+                    <label class="form-check-label" for="day_@day.Value">@day.Name</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a href="/groups" class="btn btn-secondary">Cancel</a>
+</EditForm>
 
 @code {
-    [SupplyParameterFromForm]
-    private Groups Groups { get; set; } = new();
+    private Groups group = new();
+    private List<Directions> directions = new();
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
-    private async Task AddGroups()
+    private class DayOption
+    {
+        public string Name { get; set; }
+        public int Value { get; set; }
+        public bool Selected { get; set; }
+    }
+
+    private List<DayOption> studyDaysOptions = new()
+    {
+        new() { Name = "Monday", Value = 0 },
+        new() { Name = "Tuesday", Value = 1 },
+        new() { Name = "Wednesday", Value = 2 },
+        new() { Name = "Thursday", Value = 3 },
+        new() { Name = "Friday", Value = 4 },
+        new() { Name = "Saturday", Value = 5 },
+        new() { Name = "Sunday", Value = 6 }
+    };
+
+    protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Groups.Add(Groups);
+        directions = await context.Directions.ToListAsync();
+    }
+
+    private async Task CreateGroup()
+    {
+        // Save selected days as comma-separated string
+        group.StudyDays = string.Join(",", studyDaysOptions.Where(d => d.Selected).Select(d => d.Value));
+        using var context = DbFactory.CreateDbContext();
+        context.Groups.Add(group);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/groups");
     }

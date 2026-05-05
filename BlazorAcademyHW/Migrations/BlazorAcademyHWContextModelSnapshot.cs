@@ -67,14 +67,19 @@ namespace BlazorAcademyHW.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Direction")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("DirectionId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("StudyDays")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("DirectionId");
 
                     b.ToTable("Groups");
                 });
@@ -97,8 +102,8 @@ namespace BlazorAcademyHW.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Group")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("int");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -110,12 +115,29 @@ namespace BlazorAcademyHW.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Photo")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("Photo")
+                        .HasColumnType("varbinary(max)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GroupId");
+
                     b.ToTable("Students");
+                });
+
+            modelBuilder.Entity("BlazorAcademyHW.Models.TeacherDiscipline", b =>
+                {
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DisciplineId")
+                        .HasColumnType("int");
+
+                    b.HasKey("TeacherId", "DisciplineId");
+
+                    b.HasIndex("DisciplineId");
+
+                    b.ToTable("TeacherDisciplines");
                 });
 
             modelBuilder.Entity("BlazorAcademyHW.Models.Teachers", b =>
@@ -146,8 +168,8 @@ namespace BlazorAcademyHW.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Photo")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("PhotoData")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<int>("Rate")
                         .HasColumnType("int");
@@ -158,6 +180,65 @@ namespace BlazorAcademyHW.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Teachers");
+                });
+
+            modelBuilder.Entity("BlazorAcademyHW.Models.Groups", b =>
+                {
+                    b.HasOne("BlazorAcademyHW.Models.Directions", "Direction")
+                        .WithMany("Groups")
+                        .HasForeignKey("DirectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Direction");
+                });
+
+            modelBuilder.Entity("BlazorAcademyHW.Models.Students", b =>
+                {
+                    b.HasOne("BlazorAcademyHW.Models.Groups", "Group")
+                        .WithMany("Students")
+                        .HasForeignKey("GroupId");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("BlazorAcademyHW.Models.TeacherDiscipline", b =>
+                {
+                    b.HasOne("BlazorAcademyHW.Models.Disciplines", "Discipline")
+                        .WithMany("TeacherDisciplines")
+                        .HasForeignKey("DisciplineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BlazorAcademyHW.Models.Teachers", "Teacher")
+                        .WithMany("TeacherDisciplines")
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Discipline");
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("BlazorAcademyHW.Models.Directions", b =>
+                {
+                    b.Navigation("Groups");
+                });
+
+            modelBuilder.Entity("BlazorAcademyHW.Models.Disciplines", b =>
+                {
+                    b.Navigation("TeacherDisciplines");
+                });
+
+            modelBuilder.Entity("BlazorAcademyHW.Models.Groups", b =>
+                {
+                    b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("BlazorAcademyHW.Models.Teachers", b =>
+                {
+                    b.Navigation("TeacherDisciplines");
                 });
 #pragma warning restore 612, 618
         }

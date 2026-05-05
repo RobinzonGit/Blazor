@@ -30,7 +30,7 @@
             <dt class="col-sm-2">Phone</dt>
             <dd class="col-sm-10">@teachers.Phone</dd>
             <dt class="col-sm-2">Photo</dt>
-            <dd class="col-sm-10">@teachers.Photo</dd>
+            <dd class="col-sm-10">@teachers.PhotoData</dd>
             <dt class="col-sm-2">WorkSince</dt>
             <dd class="col-sm-10">@teachers.WorkSince</dd>
             <dt class="col-sm-2">Rate</dt>
@@ -40,6 +40,20 @@
             <a href="@($"/teachers/edit?id={teachers.Id}")">Edit</a> |
             <a href="@($"/teachers")">Back to List</a>
         </div>
+        <h3>Disciplines this teacher can teach</h3>
+        @if (teachers?.TeacherDisciplines != null && teachers.TeacherDisciplines.Any())
+        {
+            <ul>
+                @foreach (var td in teachers.TeacherDisciplines)
+                {
+                    <li>@td.Discipline.Name</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No disciplines assigned.</p>
+        }
     }
 </div>
 
@@ -52,7 +66,10 @@
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        teachers = await context.Teachers.FirstOrDefaultAsync(m => m.Id == Id);
+        teachers = await context.Teachers
+        .Include(t => t.TeacherDisciplines)
+            .ThenInclude(td => td.Discipline)
+        .FirstOrDefaultAsync(m => m.Id == Id);
 
         if (teachers is null)
         {

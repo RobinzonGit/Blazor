@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+//using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BlazorAcademyHW.Models
 {
@@ -12,10 +12,11 @@ namespace BlazorAcademyHW.Models
         public DateTime DateOfBirth { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
-        public string? Photo { get; set; }
+        public byte[]? PhotoData { get; set; }
         public DateTime WorkSince { get; set; }
         public int Rate { get; set; }
 
-
+        // Many-to-many with Disciplines
+        public virtual ICollection<TeacherDiscipline> TeacherDisciplines { get; set; } = new List<TeacherDiscipline>();
     }
 }

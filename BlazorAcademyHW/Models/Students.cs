@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BlazorAcademyHW.Models
 {
@@ -11,7 +12,9 @@ namespace BlazorAcademyHW.Models
         public DateTime DateOfBirth { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
-        public string? Photo { get; set; }        
-        public string? Group { get; set; } = string.Empty;
+        public byte[]? Photo { get; set; }   // Photo stored directly in DB
+        public int? GroupId { get; set; }
+        [ForeignKey(nameof(GroupId))]
+        public virtual Groups? Group { get; set; }
     }
 }

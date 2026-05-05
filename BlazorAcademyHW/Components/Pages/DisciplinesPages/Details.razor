@@ -28,6 +28,21 @@
         </div>
     }
 </div>
+<h3>Teachers who can teach this discipline</h3>
+@if (disciplines?.TeacherDisciplines != null && disciplines.TeacherDisciplines.Any())
+{
+    <ul>
+        @foreach (var td in disciplines.TeacherDisciplines)
+        {
+            <li>@td.Teacher.LastName @td.Teacher.FirstName</li>
+        }
+    </ul>
+}
+else
+{
+    <p>No teachers assigned.</p>
+}
+
 
 @code {
     private Disciplines? disciplines;
@@ -38,9 +53,12 @@
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        disciplines = await context.Disciplines.FirstOrDefaultAsync(m => m.Id == Id);
+        disciplines = await context.Disciplines
+        .Include(d => d.TeacherDisciplines)
+            .ThenInclude(td => td.Teacher)
+        .FirstOrDefaultAsync(m => m.Id == Id);
 
-        if (disciplines is null)
+    if (disciplines is null)
         {
             NavigationManager.NavigateTo("notfound");
         }

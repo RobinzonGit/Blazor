@@ -1,6 +1,7 @@
 ﻿@page "/teachers/edit"
 @using Microsoft.EntityFrameworkCore
 @using BlazorAcademyHW.Models
+@using System.IO
 @inject IDbContextFactory<BlazorAcademyHW.Data.BlazorAcademyHWContext> DbFactory
 @inject NavigationManager NavigationManager
 
@@ -20,18 +21,18 @@ else
         <div class="col-md-4">
             <EditForm method="post" Model="Teachers" OnValidSubmit="UpdateTeachers" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert"/>
+                <ValidationSummary role="alert" />
                 <input type="hidden" name="Teachers.Id" value="@Teachers.Id" />
                 <div class="mb-3">
-                <span class="text-danger">*</span>
+                    <span class="text-danger">*</span>
                     <label for="lastname" class="form-label">LastName:</label>
-                    <InputText id="lastname" @bind-Value="Teachers.LastName" class="form-control" aria-required="true"/>
+                    <InputText id="lastname" @bind-Value="Teachers.LastName" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => Teachers.LastName" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                <span class="text-danger">*</span>
+                    <span class="text-danger">*</span>
                     <label for="firstname" class="form-label">FirstName:</label>
-                    <InputText id="firstname" @bind-Value="Teachers.FirstName" class="form-control" aria-required="true"/>
+                    <InputText id="firstname" @bind-Value="Teachers.FirstName" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => Teachers.FirstName" class="text-danger" />
                 </div>
                 <div class="mb-3">
@@ -55,9 +56,20 @@ else
                     <ValidationMessage For="() => Teachers.Phone" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="photo" class="form-label">Photo:</label>
-                    <InputText id="photo" @bind-Value="Teachers.Photo" class="form-control" />
-                    <ValidationMessage For="() => Teachers.Photo" class="text-danger" />
+                    <label class="form-label">Current Photo:</label>
+                    @if (Teachers.PhotoData != null)
+                    {
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(Teachers.PhotoData)" style="max-width: 150px; max-height: 150px;" />
+                    }
+                    else
+                    {
+                        <p>No photo</p>
+                    }
+                </div>
+                <div class="mb-3">
+                    <label for="photo" class="form-label">Change Photo:</label>
+                    <InputFile OnChange="OnPhotoUpload" />
+                    <ValidationMessage For="() => Teachers.PhotoData" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="worksince" class="form-label">WorkSince:</label>
@@ -97,8 +109,17 @@ else
         }
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task OnPhotoUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null && Teachers != null)
+        {
+            using var ms = new MemoryStream();
+            await file.OpenReadStream(maxAllowedSize: 5_000_000).CopyToAsync(ms);
+            Teachers.PhotoData = ms.ToArray();
+        }
+    }
+
     private async Task UpdateTeachers()
     {
         using var context = DbFactory.CreateDbContext();

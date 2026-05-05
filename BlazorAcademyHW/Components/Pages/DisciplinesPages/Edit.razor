@@ -33,6 +33,15 @@ else
                     <InputNumber id="lessons" @bind-Value="Disciplines.Lessons" class="form-control" />
                     <ValidationMessage For="() => Disciplines.Lessons" class="text-danger" />
                 </div>
+                <div class="mb-3">
+                    <label>Teachers</label>
+                    <select multiple @bind="selectedTeacherIds" class="form-select">
+                        @foreach (var t in allTeachers)
+                        {
+                            <option value="@t.Id">@t.LastName @t.FirstName</option>
+                        }
+                    </select>
+                </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
         </div>
@@ -47,6 +56,10 @@ else
     [SupplyParameterFromQuery]
     private int Id { get; set; }
 
+    // Поля:
+    private List<Teachers> allTeachers = new();
+    private List<int> selectedTeacherIds = new();
+
     [SupplyParameterFromForm]
     private Disciplines? Disciplines { get; set; }
 
@@ -59,31 +72,36 @@ else
         {
             NavigationManager.NavigateTo("notfound");
         }
+        // В OnInitializedAsync:
+        allTeachers = await context.Teachers.ToListAsync();
+        if (Disciplines != null)
+        {
+            selectedTeacherIds = Disciplines.TeacherDisciplines.Select(td => td.TeacherId).ToList();
+        }
     }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    // При сохранении обновить связи:
     private async Task UpdateDisciplines()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Attach(Disciplines!).State = EntityState.Modified;
-
-        try
+        var discipline = await context.Disciplines
+            .Include(d => d.TeacherDisciplines)
+            .FirstOrDefaultAsync(d => d.Id == Disciplines!.Id);
+    
+        // Удалить старые связи
+        discipline!.TeacherDisciplines.Clear();
+        // Добавить новые
+        foreach (var tid in selectedTeacherIds)
         {
-            await context.SaveChangesAsync();
+            discipline.TeacherDisciplines.Add(new TeacherDiscipline { TeacherId = tid, DisciplineId = discipline.Id });
         }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!DisciplinesExists(Disciplines!.Id))
-            {
-                NavigationManager.NavigateTo("notfound");
-            }
-            else
-            {
-                throw;
-            }
-        }
-
+        // Также обновить скалярные поля (Name, Lessons)
+        discipline.Name = Disciplines.Name;
+        discipline.Lessons = Disciplines.Lessons;
+    
+        await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/disciplines");
     }
 
@@ -92,4 +110,5 @@ else
         using var context = DbFactory.CreateDbContext();
         return context.Disciplines.Any(e => e.Id == id);
     }
+
 }

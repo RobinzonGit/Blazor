@@ -55,14 +55,18 @@ else
                     <ValidationMessage For="() => Students.Phone" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="photo" class="form-label">Photo:</label>
-                    <InputText id="photo" @bind-Value="Students.Photo" class="form-control" />
-                    <ValidationMessage For="() => Students.Photo" class="text-danger" />
+                    <label class="form-label">Group</label>
+                    <select @bind="student.GroupId" class="form-select">
+                        <option value="">-- Select Group --</option>
+                        @foreach (var grp in groups)
+                        {
+                            <option value="@grp.Id">@grp.Name</option>
+                        }
+                    </select>
                 </div>
                 <div class="mb-3">
-                    <label for="group" class="form-label">Group:</label>
-                    <InputText id="group" @bind-Value="Students.Group" class="form-control" />
-                    <ValidationMessage For="() => Students.Group" class="text-danger" />
+                    <label class="form-label">Photo</label>
+                    <InputFile OnChange="OnPhotoUpload" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
@@ -81,16 +85,46 @@ else
     [SupplyParameterFromForm]
     private Students? Students { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        using var context = DbFactory.CreateDbContext();
-        Students ??= await context.Students.FirstOrDefaultAsync(m => m.Id == Id);
+    @code {
+        private Students student = new();
+        private List<Groups> groups = new();
 
-        if (Students is null)
+        protected override async Task OnInitializedAsync()
         {
-            NavigationManager.NavigateTo("notfound");
+            using var context = DbFactory.CreateDbContext();
+            groups = await context.Groups.Include(g => g.Direction).ToListAsync();
+        }
+
+        private async Task OnPhotoUpload(InputFileChangeEventArgs e)
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                using var ms = new MemoryStream();
+                await file.OpenReadStream(maxAllowedSize: 5_000_000).CopyToAsync(ms);
+                student.Photo = ms.ToArray();
+            }
+        }
+
+        private async Task CreateStudent()
+        {
+            using var context = DbFactory.CreateDbContext();
+            context.Students.Add(student);
+            await context.SaveChangesAsync();
+            NavigationManager.NavigateTo("/students");
         }
     }
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     using var context = DbFactory.CreateDbContext();
+    //     Students ??= await context.Students.FirstOrDefaultAsync(m => m.Id == Id);
+
+    //     if (Students is null)
+    //     {
+    //         NavigationManager.NavigateTo("notfound");
+    //     }
+    // }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
