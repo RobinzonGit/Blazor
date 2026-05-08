@@ -30,9 +30,18 @@
             <dt class="col-sm-2">Phone</dt>
             <dd class="col-sm-10">@students.Phone</dd>
             <dt class="col-sm-2">Photo</dt>
-            <dd class="col-sm-10">@students.Photo</dd>
+            <dd class="col-sm-10">
+                @if (students.Photo != null)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(students.Photo)" style="max-width:150px;max-height:150px;" />
+                }
+                else
+                {
+                    <p>No photo</p>
+                }
+            </dd>
             <dt class="col-sm-2">Group</dt>
-            <dd class="col-sm-10">@students.Group</dd>
+            <dd class="col-sm-10">@students.Group?.Name</dd>
         </dl>
         <div>
             <a href="@($"/students/edit?id={students.Id}")">Edit</a> |

@@ -20,7 +20,9 @@
             <dt class="col-sm-2">Name</dt>
             <dd class="col-sm-10">@groups.Name</dd>
             <dt class="col-sm-2">Direction</dt>
-            <dd class="col-sm-10">@groups.Direction</dd>
+            <dd class="col-sm-10">@groups.Direction?.Name</dd>
+            <dt class="col-sm-2">Study Days</dt>
+            <dd class="col-sm-10">@DisplayStudyDays(groups.StudyDays)</dd>
         </dl>
         <div>
             <a href="@($"/groups/edit?id={groups.Id}")">Edit</a> |
@@ -38,11 +40,24 @@
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        groups = await context.Groups.FirstOrDefaultAsync(m => m.Id == Id);
+        groups = await context.Groups.Include(g => g.Direction).FirstOrDefaultAsync(m => m.Id == Id);
 
         if (groups is null)
         {
             NavigationManager.NavigateTo("notfound");
         }
+    }
+
+    private static string DisplayStudyDays(string? studyDays)
+    {
+        if (string.IsNullOrWhiteSpace(studyDays)) return string.Empty;
+        var map = new[] { "Пн.", "Вт.", "Ср.", "Чт.", "Пт.", "Сб.", "Вс." };
+        var parts = studyDays.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        var names = parts.Select(p =>
+        {
+            if (int.TryParse(p, out var v) && v >= 0 && v < map.Length) return map[v];
+            return null;
+        }).Where(x => x != null)!;
+        return string.Join(',', names);
     }
 }

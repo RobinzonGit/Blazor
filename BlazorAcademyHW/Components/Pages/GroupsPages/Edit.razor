@@ -8,7 +8,7 @@
 
 <h1>Edit</h1>
 
-<EditForm Model="@group" OnValidSubmit="CreateGroup" FormName="createGroup" Enhance>
+<EditForm Model="@group" OnValidSubmit="UpdateGroup" FormName="editGroup" Enhance>
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -41,11 +41,14 @@
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Create</button>
+    <button type="submit" class="btn btn-primary">Save</button>
     <a href="/groups" class="btn btn-secondary">Cancel</a>
 </EditForm>
 
 @code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
     private Groups group = new();
     private List<Directions> directions = new();
 
@@ -71,14 +74,40 @@
     {
         using var context = DbFactory.CreateDbContext();
         directions = await context.Directions.ToListAsync();
+
+        // Load existing group for editing
+        group = await context.Groups.FirstOrDefaultAsync(g => g.Id == Id) ?? new Groups();
+
+        // Preselect study days
+        if (!string.IsNullOrWhiteSpace(group.StudyDays))
+        {
+            var selected = group.StudyDays.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => int.TryParse(s, out var v) ? v : -1).Where(v => v >= 0).ToHashSet();
+            foreach (var d in studyDaysOptions)
+            {
+                d.Selected = selected.Contains(d.Value);
+            }
+        }
     }
 
-    private async Task CreateGroup()
+    private async Task UpdateGroup()
     {
         // Save selected days as comma-separated string
         group.StudyDays = string.Join(",", studyDaysOptions.Where(d => d.Selected).Select(d => d.Value));
         using var context = DbFactory.CreateDbContext();
-        context.Groups.Add(group);
+
+        var existing = await context.Groups.FirstOrDefaultAsync(g => g.Id == group.Id);
+        if (existing is null)
+        {
+            // If not found, create new
+            context.Groups.Add(group);
+        }
+        else
+        {
+            existing.Name = group.Name;
+            existing.DirectionId = group.DirectionId;
+            existing.StudyDays = group.StudyDays;
+        }
+
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/groups");
     }

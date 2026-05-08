@@ -1,5 +1,6 @@
 ﻿@page "/groups"
 @using Microsoft.EntityFrameworkCore
+@using System.Linq
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BlazorAcademyHW.Models
 @using BlazorAcademyHW.Data
@@ -14,9 +15,26 @@
     <a href="groups/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.Groups">
+<div class="mb-3 d-flex gap-2 align-items-center">
+    <label class="form-label mb-0">Filter by direction:</label>
+    <select @bind="selectedDirectionId" class="form-select" style="width:250px;">
+        <option value="0">-- All Directions --</option>
+        @foreach (var d in directions)
+        {
+            <option value="@d.Id">@d.Name</option>
+        }
+    </select>
+    <button class="btn btn-secondary" @onclick="ApplyFilter">Apply</button>
+</div>
+
+<QuickGrid Class="table" Items="groupsList.AsQueryable()">
     <PropertyColumn Property="groups => groups.Name" />
-    <PropertyColumn Property="groups => groups.Direction" />
+    <TemplateColumn Context="groups">
+        @groups.Direction?.Name
+    </TemplateColumn>
+    <TemplateColumn Context="groups" Title="Study Days">
+        @DisplayStudyDays(groups.StudyDays)
+    </TemplateColumn>
 
     <TemplateColumn Context="groups">
         <a href="@($"groups/edit?id={groups.Id}")">Edit</a> |
@@ -27,10 +45,41 @@
 
 @code {
     private BlazorAcademyHWContext context = default!;
+    private List<Groups> groupsList = new();
+    private List<Directions> directions = new();
+    private int selectedDirectionId = 0;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
+        directions = await context.Directions.ToListAsync();
+        groupsList = await context.Groups.Include(g => g.Direction).ToListAsync();
+    }
+
+    private async Task ApplyFilter()
+    {
+        if (selectedDirectionId == 0)
+        {
+            groupsList = await context.Groups.Include(g => g.Direction).ToListAsync();
+        }
+        else
+        {
+            groupsList = await context.Groups.Include(g => g.Direction)
+                .Where(g => g.DirectionId == selectedDirectionId).ToListAsync();
+        }
+    }
+
+    private static string DisplayStudyDays(string? studyDays)
+    {
+        if (string.IsNullOrWhiteSpace(studyDays)) return string.Empty;
+        var map = new[] { "Пн.", "Вт.", "Ср.", "Чт.", "Пт.", "Сб.", "Вс." };
+        var parts = studyDays.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        var names = parts.Select(p =>
+        {
+            if (int.TryParse(p, out var v) && v >= 0 && v < map.Length) return map[v];
+            return null;
+        }).Where(x => x != null)!;
+        return string.Join(',', names);
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

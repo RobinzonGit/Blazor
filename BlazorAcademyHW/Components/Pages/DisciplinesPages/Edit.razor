@@ -76,6 +76,8 @@ else
         allTeachers = await context.Teachers.ToListAsync();
         if (Disciplines != null)
         {
+            // Ensure TeacherDisciplines are loaded
+            await context.Entry(Disciplines).Collection(d => d.TeacherDisciplines).LoadAsync();
             selectedTeacherIds = Disciplines.TeacherDisciplines.Select(td => td.TeacherId).ToList();
         }
     }

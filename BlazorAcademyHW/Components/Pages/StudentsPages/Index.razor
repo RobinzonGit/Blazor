@@ -1,5 +1,6 @@
 ﻿@page "/students"
 @using Microsoft.EntityFrameworkCore
+@using System.Linq
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BlazorAcademyHW.Models
 @using BlazorAcademyHW.Data
@@ -14,15 +15,44 @@
     <a href="students/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.Students">
+<div class="mb-3 d-flex gap-2 align-items-center">
+    <label class="form-label mb-0">Filter by direction:</label>
+    <select @bind="selectedDirectionId" class="form-select" style="width:220px;">
+        <option value="0">-- All Directions --</option>
+        @foreach (var d in directions)
+        {
+            <option value="@d.Id">@d.Name</option>
+        }
+    </select>
+
+    <label class="form-label mb-0">Filter by group:</label>
+    <select @bind="selectedGroupId" class="form-select" style="width:220px;">
+        <option value="0">-- All Groups --</option>
+        @foreach (var g in groups)
+        {
+            <option value="@g.Id">@g.Name (@g.Direction?.Name)</option>
+        }
+    </select>
+
+    <button class="btn btn-secondary" @onclick="ApplyFilter">Apply</button>
+</div>
+
+<QuickGrid Class="table" Items="studentsList.AsQueryable()">
     <PropertyColumn Property="students => students.LastName" />
     <PropertyColumn Property="students => students.FirstName" />
     <PropertyColumn Property="students => students.MiddleName" />
     <PropertyColumn Property="students => students.DateOfBirth" />
     <PropertyColumn Property="students => students.Email" />
     <PropertyColumn Property="students => students.Phone" />
-    <PropertyColumn Property="students => students.Photo" />
-    <PropertyColumn Property="students => students.Group" />
+    <TemplateColumn Context="students">
+        @if (students.Photo != null)
+        {
+            <img src="data:image/jpeg;base64,@Convert.ToBase64String(students.Photo)" style="max-width:50px;max-height:50px;" />
+        }
+    </TemplateColumn>
+    <TemplateColumn Context="students">
+        @students.Group?.Name
+    </TemplateColumn>
 
     <TemplateColumn Context="students">
         <a href="@($"students/edit?id={students.Id}")">Edit</a> |
@@ -33,10 +63,32 @@
 
 @code {
     private BlazorAcademyHWContext context = default!;
+    private List<Students> studentsList = new();
+    private List<Groups> groups = new();
+    private List<Directions> directions = new();
+    private int selectedDirectionId = 0;
+    private int selectedGroupId = 0;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
+        directions = await context.Directions.ToListAsync();
+        groups = await context.Groups.Include(g => g.Direction).ToListAsync();
+        studentsList = await context.Students.Include(s => s.Group).ThenInclude(g => g.Direction).ToListAsync();
+    }
+
+    private async Task ApplyFilter()
+    {
+        var q = context.Students.Include(s => s.Group).ThenInclude(g => g.Direction).AsQueryable();
+        if (selectedDirectionId != 0)
+        {
+            q = q.Where(s => s.Group != null && s.Group.DirectionId == selectedDirectionId);
+        }
+        if (selectedGroupId != 0)
+        {
+            q = q.Where(s => s.GroupId == selectedGroupId);
+        }
+        studentsList = await q.ToListAsync();
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

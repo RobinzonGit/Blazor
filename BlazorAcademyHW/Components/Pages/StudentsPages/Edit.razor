@@ -56,11 +56,11 @@ else
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Group</label>
-                    <select @bind="student.GroupId" class="form-select">
+                    <select @bind="Students.GroupId" class="form-select">
                         <option value="">-- Select Group --</option>
                         @foreach (var grp in groups)
                         {
-                            <option value="@grp.Id">@grp.Name</option>
+                            <option value="@grp.Id">@grp.Name (@grp.Direction?.Name)</option>
                         }
                     </select>
                 </div>
@@ -86,32 +86,29 @@ else
     private Students? Students { get; set; }
 
     @code {
-        private Students student = new();
         private List<Groups> groups = new();
 
         protected override async Task OnInitializedAsync()
         {
             using var context = DbFactory.CreateDbContext();
             groups = await context.Groups.Include(g => g.Direction).ToListAsync();
+            Students ??= await context.Students.Include(s => s.Group).FirstOrDefaultAsync(m => m.Id == Id);
+
+            if (Students is null)
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
         }
 
         private async Task OnPhotoUpload(InputFileChangeEventArgs e)
         {
             var file = e.File;
-            if (file != null)
+            if (file != null && Students != null)
             {
                 using var ms = new MemoryStream();
                 await file.OpenReadStream(maxAllowedSize: 5_000_000).CopyToAsync(ms);
-                student.Photo = ms.ToArray();
+                Students.Photo = ms.ToArray();
             }
-        }
-
-        private async Task CreateStudent()
-        {
-            using var context = DbFactory.CreateDbContext();
-            context.Students.Add(student);
-            await context.SaveChangesAsync();
-            NavigationManager.NavigateTo("/students");
         }
     }
 

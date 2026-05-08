@@ -18,15 +18,15 @@ else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm method="post" Model="Directions" OnValidSubmit="UpdateDirections" FormName="edit" Enhance>
+            <EditForm method="post" Model="editModel" OnValidSubmit="UpdateDirections" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
                 <ValidationSummary role="alert"/>
-                <input type="hidden" name="Directions.Id" value="@Directions.Id" />
+                <input type="hidden" name="Directions.Id" value="@editModel.Id" />
                 <div class="mb-3">
                 <span class="text-danger">*</span>
                     <label for="name" class="form-label">Name:</label>
-                    <InputText id="name" @bind-Value="Directions.Name" class="form-control" aria-required="true"/>
-                    <ValidationMessage For="() => Directions.Name" class="text-danger" />
+                    <InputText id="name" @bind-Value="editModel.Name" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => editModel.Name" class="text-danger" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
@@ -42,18 +42,22 @@ else
     [SupplyParameterFromQuery]
     private int Id { get; set; }
 
-    [SupplyParameterFromForm]
     private Directions? Directions { get; set; }
+    private Directions editModel = new();
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        Directions ??= await context.Directions.FirstOrDefaultAsync(m => m.Id == Id);
+        Directions = await context.Directions.FirstOrDefaultAsync(m => m.Id == Id);
 
         if (Directions is null)
         {
             NavigationManager.NavigateTo("notfound");
+            return;
         }
+
+        // copy to edit model to bind EditForm
+        editModel = new Directions { Id = Directions.Id, Name = Directions.Name };
     }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -61,7 +65,13 @@ else
     private async Task UpdateDirections()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Attach(Directions!).State = EntityState.Modified;
+        var existing = await context.Directions.FirstOrDefaultAsync(d => d.Id == editModel.Id);
+        if (existing is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+            return;
+        }
+        existing.Name = editModel.Name;
 
         try
         {

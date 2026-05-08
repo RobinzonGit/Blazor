@@ -14,14 +14,27 @@
     <a href="teachers/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.Teachers">
+@code {
+    private List<Teachers> teachersList = new();
+}
+
+<QuickGrid Class="table" Items="teachersList.AsQueryable()">
     <PropertyColumn Property="teachers => teachers.LastName" />
     <PropertyColumn Property="teachers => teachers.FirstName" />
     <PropertyColumn Property="teachers => teachers.MiddleName" />
     <PropertyColumn Property="teachers => teachers.DateOfBirth" />
     <PropertyColumn Property="teachers => teachers.Email" />
     <PropertyColumn Property="teachers => teachers.Phone" />
-    <PropertyColumn Property="teachers => teachers.PhotoData" />
+    <TemplateColumn Context="teachers" Title="Photo">
+        @if (teachers.PhotoData != null && teachers.PhotoData.Length > 0)
+        {
+            <a href="@($"data:image/jpeg;base64,{Convert.ToBase64String(teachers.PhotoData)}")" download="@($"teacher_{teachers.Id}.jpg")">Скачать фото</a>
+        }
+        else
+        {
+            <span>Нет фото</span>
+        }
+    </TemplateColumn>
     <PropertyColumn Property="teachers => teachers.WorkSince" />
     <PropertyColumn Property="teachers => teachers.Rate" />
 
@@ -34,10 +47,10 @@
 
 @code {
     private BlazorAcademyHWContext context = default!;
-
     protected override void OnInitialized()
     {
         context = DbFactory.CreateDbContext();
+        teachersList = context.Teachers.ToList();
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();
