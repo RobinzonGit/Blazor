@@ -5,7 +5,6 @@
 @inject NavigationManager NavigationManager
 
 <PageTitle>Edit</PageTitle>
-
 <h1>Edit</h1>
 
 @if (group == null)
@@ -14,7 +13,7 @@
 }
 else
 {
-    <EditForm Model="group" OnValidSubmit="UpdateGroup" FormName="editGroup" Enhance>
+    <EditForm Model="group" OnValidSubmit="UpdateGroup" FormName="editGroup">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -87,32 +86,27 @@ else
             return;
         }
 
-        // Заполняем чекбоксы из существующей строки StudyDays
         if (!string.IsNullOrWhiteSpace(group.StudyDays))
         {
             var selected = group.StudyDays.Split(',', StringSplitOptions.RemoveEmptyEntries)
                            .Select(s => int.TryParse(s, out var v) ? v : -1)
                            .Where(v => v >= 0).ToHashSet();
             foreach (var d in studyDaysOptions)
-            {
                 d.Selected = selected.Contains(d.Value);
-            }
         }
     }
 
     private async Task UpdateGroup()
     {
-        // ГЛАВНОЕ: формируем новую строку из выбранных чекбоксов
         var newStudyDays = string.Join(",", studyDaysOptions.Where(d => d.Selected).Select(d => d.Value));
 
         using var context = DbFactory.CreateDbContext();
         var existing = await context.Groups.FirstOrDefaultAsync(g => g.Id == group!.Id);
         if (existing == null) return;
 
-        // Обновляем поля
         existing.Name = group.Name;
         existing.DirectionId = group.DirectionId;
-        existing.StudyDays = newStudyDays;   // присваиваем новую строку
+        existing.StudyDays = newStudyDays;
 
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/groups");

@@ -5,9 +5,7 @@
 @inject NavigationManager NavigationManager
 
 <PageTitle>Edit</PageTitle>
-
 <h1>Edit</h1>
-
 <h2>Disciplines</h2>
 <hr />
 @if (Disciplines is null)
@@ -18,27 +16,27 @@ else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm method="post" Model="Disciplines" OnValidSubmit="UpdateDisciplines" FormName="edit" Enhance>
+            <EditForm Model="Disciplines" OnValidSubmit="UpdateDisciplines" FormName="editDiscipline">
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert" />
+                <ValidationSummary />
                 <input type="hidden" name="Disciplines.Id" value="@Disciplines.Id" />
                 <div class="mb-3">
                     <span class="text-danger">*</span>
-                    <label for="name" class="form-label">Name:</label>
-                    <InputText id="name" @bind-Value="Disciplines.Name" class="form-control" aria-required="true" />
-                    <ValidationMessage For="() => Disciplines.Name" class="text-danger" />
+                    <label for="name">Name:</label>
+                    <InputText id="name" @bind-Value="Disciplines.Name" class="form-control" />
                 </div>
                 <div class="mb-3">
-                    <label for="lessons" class="form-label">Lessons:</label>
+                    <label for="lessons">Lessons:</label>
                     <InputNumber id="lessons" @bind-Value="Disciplines.Lessons" class="form-control" />
-                    <ValidationMessage For="() => Disciplines.Lessons" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label>Teachers</label>
-                    <select multiple @bind="selectedTeacherIdsString" class="form-select">
+                    <select multiple class="form-select" @onchange="OnTeachersSelectionChanged">
                         @foreach (var t in allTeachers)
                         {
-                            <option value="@t.Id">@t.LastName @t.FirstName</option>
+                            <option value="@t.Id" selected="@selectedTeacherIds.Contains(t.Id)">
+                                @t.LastName @t.FirstName
+                            </option>
                         }
                     </select>
                 </div>
@@ -47,41 +45,34 @@ else
         </div>
     </div>
 }
-
-<div>
-    <a href="/disciplines">Back to List</a>
-</div>
+<div><a href="/disciplines">Back to List</a></div>
 
 @code {
     [SupplyParameterFromQuery] private int Id { get; set; }
-
     private List<Teachers> allTeachers = new();
-    private string selectedTeacherIdsString = "";
-
-    private List<int> selectedTeacherIds
-    {
-        get => selectedTeacherIdsString.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
-        set => selectedTeacherIdsString = string.Join(",", value);
-    }
-
-    [SupplyParameterFromForm] private Disciplines? Disciplines { get; set; }
+    private List<int> selectedTeacherIds = new();
+    private Disciplines? Disciplines { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        Disciplines ??= await context.Disciplines.FirstOrDefaultAsync(m => m.Id == Id);
-
+        Disciplines = await context.Disciplines.FirstOrDefaultAsync(m => m.Id == Id);
         if (Disciplines is null)
         {
             NavigationManager.NavigateTo("notfound");
+            return;
         }
-
         allTeachers = await context.Teachers.ToListAsync();
-        if (Disciplines != null)
-        {
-            await context.Entry(Disciplines).Collection(d => d.TeacherDisciplines).LoadAsync();
-            selectedTeacherIds = Disciplines.TeacherDisciplines.Select(td => td.TeacherId).ToList();
-        }
+        await context.Entry(Disciplines).Collection(d => d.TeacherDisciplines).LoadAsync();
+        selectedTeacherIds = Disciplines.TeacherDisciplines.Select(td => td.TeacherId).ToList();
+    }
+
+    private void OnTeachersSelectionChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string[] values)
+            selectedTeacherIds = values.Select(int.Parse).ToList();
+        else
+            selectedTeacherIds.Clear();
     }
 
     private async Task UpdateDisciplines()
@@ -90,19 +81,13 @@ else
         var discipline = await context.Disciplines
             .Include(d => d.TeacherDisciplines)
             .FirstOrDefaultAsync(d => d.Id == Disciplines!.Id);
-
         if (discipline == null) return;
 
-        // Update scalar properties
         discipline.Name = Disciplines.Name;
         discipline.Lessons = Disciplines.Lessons;
-
-        // Update relationships
         discipline.TeacherDisciplines.Clear();
         foreach (var tid in selectedTeacherIds)
-        {
             discipline.TeacherDisciplines.Add(new TeacherDiscipline { TeacherId = tid, DisciplineId = discipline.Id });
-        }
 
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/disciplines");

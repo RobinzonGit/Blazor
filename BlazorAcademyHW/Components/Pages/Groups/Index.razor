@@ -8,12 +8,8 @@
 @inject IDbContextFactory<BlazorAcademyHW.Data.BlazorAcademyHWContext> DbFactory
 
 <PageTitle>Index</PageTitle>
-
 <h1>Index</h1>
-
-<p>
-    <a href="groups/create">Create New</a>
-</p>
+<p><a href="groups/create">Create New</a></p>
 
 <div class="mb-3 d-flex gap-2 align-items-center">
     <label class="form-label mb-0">Filter by direction:</label>
@@ -34,7 +30,6 @@
     <TemplateColumn Context="g" Title="Study Days">
         @DisplayStudyDays(g.StudyDays)
     </TemplateColumn>
-
     <TemplateColumn Context="g">
         <a href="@($"groups/edit?id={g.Id}")">Edit</a> |
         <a href="@($"groups/details?id={g.Id}")">Details</a> |
@@ -59,10 +54,9 @@
     {
         var query = context.Groups.Include(g => g.Direction).AsQueryable();
         if (selectedDirectionId != 0)
-        {
             query = query.Where(g => g.DirectionId == selectedDirectionId);
-        }
         groupsList = await query.ToListAsync();
+        StateHasChanged();   // обязательно для QuickGrid
     }
 
     private async Task OnDirectionChanged(ChangeEventArgs e)

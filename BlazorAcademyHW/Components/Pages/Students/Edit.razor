@@ -5,9 +5,7 @@
 @inject NavigationManager NavigationManager
 
 <PageTitle>Edit</PageTitle>
-
 <h1>Edit</h1>
-
 <h2>Students</h2>
 <hr />
 @if (Students is null)
@@ -18,21 +16,19 @@ else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm method="post" Model="Students" OnValidSubmit="UpdateStudents" FormName="edit" Enhance>
+            <EditForm Model="Students" OnValidSubmit="UpdateStudents" FormName="editStudent">
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert" />
+                <ValidationSummary />
                 <input type="hidden" name="Students.Id" value="@Students.Id" />
                 <div class="mb-3">
                     <span class="text-danger">*</span>
                     <label for="lastname" class="form-label">LastName:</label>
                     <InputText id="lastname" @bind-Value="Students.LastName" class="form-control" />
-                    <ValidationMessage For="() => Students.LastName" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <span class="text-danger">*</span>
                     <label for="firstname" class="form-label">FirstName:</label>
                     <InputText id="firstname" @bind-Value="Students.FirstName" class="form-control" />
-                    <ValidationMessage For="() => Students.FirstName" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="middlename" class="form-label">MiddleName:</label>
@@ -80,23 +76,18 @@ else
         </div>
     </div>
 }
-
-<div>
-    <a href="/students">Back to List</a>
-</div>
+<div><a href="/students">Back to List</a></div>
 
 @code {
     [SupplyParameterFromQuery] private int Id { get; set; }
-    [SupplyParameterFromForm] private Students? Students { get; set; }
-
+    private Students? Students { get; set; }
     private List<Groups> groups = new();
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
         groups = await context.Groups.Include(g => g.Direction).ToListAsync();
-        Students ??= await context.Students.Include(s => s.Group).FirstOrDefaultAsync(m => m.Id == Id);
-
+        Students = await context.Students.FirstOrDefaultAsync(m => m.Id == Id);
         if (Students is null) NavigationManager.NavigateTo("notfound");
     }
 
@@ -114,23 +105,23 @@ else
     private async Task UpdateStudents()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Attach(Students!).State = EntityState.Modified;
-        try
+        var existing = await context.Students.FirstOrDefaultAsync(s => s.Id == Students!.Id);
+        if (existing == null)
         {
-            await context.SaveChangesAsync();
+            NavigationManager.NavigateTo("notfound");
+            return;
         }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!StudentsExists(Students!.Id))
-                NavigationManager.NavigateTo("notfound");
-            else throw;
-        }
-        NavigationManager.NavigateTo("/students");
-    }
 
-    private bool StudentsExists(int id)
-    {
-        using var context = DbFactory.CreateDbContext();
-        return context.Students.Any(e => e.Id == id);
+        existing.LastName = Students.LastName;
+        existing.FirstName = Students.FirstName;
+        existing.MiddleName = Students.MiddleName;
+        existing.DateOfBirth = Students.DateOfBirth;
+        existing.Email = Students.Email;
+        existing.Phone = Students.Phone;
+        existing.Photo = Students.Photo;
+        existing.GroupId = Students.GroupId;
+
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/students");
     }
 }

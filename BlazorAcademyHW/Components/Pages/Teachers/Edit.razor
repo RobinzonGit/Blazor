@@ -1,14 +1,11 @@
 ﻿@page "/teachers/edit"
 @using Microsoft.EntityFrameworkCore
 @using BlazorAcademyHW.Models
-@using System.IO
 @inject IDbContextFactory<BlazorAcademyHW.Data.BlazorAcademyHWContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Edit</PageTitle>
-
 <h1>Edit</h1>
-
 <h2>Teachers</h2>
 <hr />
 @if (Teachers is null)
@@ -19,47 +16,41 @@ else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm method="post" Model="Teachers" OnValidSubmit="UpdateTeachers" FormName="edit" Enhance>
+            <EditForm Model="Teachers" OnValidSubmit="UpdateTeachers" FormName="editTeacher">
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert" />
+                <ValidationSummary />
                 <input type="hidden" name="Teachers.Id" value="@Teachers.Id" />
                 <div class="mb-3">
                     <span class="text-danger">*</span>
-                    <label for="lastname" class="form-label">LastName:</label>
-                    <InputText id="lastname" @bind-Value="Teachers.LastName" class="form-control" aria-required="true" />
-                    <ValidationMessage For="() => Teachers.LastName" class="text-danger" />
+                    <label for="lastname">LastName:</label>
+                    <InputText id="lastname" @bind-Value="Teachers.LastName" class="form-control" />
                 </div>
                 <div class="mb-3">
                     <span class="text-danger">*</span>
-                    <label for="firstname" class="form-label">FirstName:</label>
-                    <InputText id="firstname" @bind-Value="Teachers.FirstName" class="form-control" aria-required="true" />
-                    <ValidationMessage For="() => Teachers.FirstName" class="text-danger" />
+                    <label for="firstname">FirstName:</label>
+                    <InputText id="firstname" @bind-Value="Teachers.FirstName" class="form-control" />
                 </div>
                 <div class="mb-3">
-                    <label for="middlename" class="form-label">MiddleName:</label>
+                    <label for="middlename">MiddleName:</label>
                     <InputText id="middlename" @bind-Value="Teachers.MiddleName" class="form-control" />
-                    <ValidationMessage For="() => Teachers.MiddleName" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="dateofbirth" class="form-label">DateOfBirth:</label>
+                    <label for="dateofbirth">DateOfBirth:</label>
                     <InputDate id="dateofbirth" @bind-Value="Teachers.DateOfBirth" class="form-control" />
-                    <ValidationMessage For="() => Teachers.DateOfBirth" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email:</label>
+                    <label for="email">Email:</label>
                     <InputText id="email" @bind-Value="Teachers.Email" class="form-control" />
-                    <ValidationMessage For="() => Teachers.Email" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="phone" class="form-label">Phone:</label>
+                    <label for="phone">Phone:</label>
                     <InputText id="phone" @bind-Value="Teachers.Phone" class="form-control" />
-                    <ValidationMessage For="() => Teachers.Phone" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Current Photo:</label>
                     @if (Teachers.PhotoData != null)
                     {
-                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(Teachers.PhotoData)" style="max-width: 150px; max-height: 150px;" />
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(Teachers.PhotoData)" style="max-width:150px; max-height:150px;" />
                     }
                     else
                     {
@@ -69,44 +60,31 @@ else
                 <div class="mb-3">
                     <label for="photo" class="form-label">Change Photo:</label>
                     <InputFile OnChange="OnPhotoUpload" />
-                    <ValidationMessage For="() => Teachers.PhotoData" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="worksince" class="form-label">WorkSince:</label>
+                    <label for="worksince">WorkSince:</label>
                     <InputDate id="worksince" @bind-Value="Teachers.WorkSince" class="form-control" />
-                    <ValidationMessage For="() => Teachers.WorkSince" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="rate" class="form-label">Rate:</label>
+                    <label for="rate">Rate:</label>
                     <InputNumber id="rate" @bind-Value="Teachers.Rate" class="form-control" />
-                    <ValidationMessage For="() => Teachers.Rate" class="text-danger" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
         </div>
     </div>
 }
-
-<div>
-    <a href="/teachers">Back to List</a>
-</div>
+<div><a href="/teachers">Back to List</a></div>
 
 @code {
-    [SupplyParameterFromQuery]
-    private int Id { get; set; }
-
-    [SupplyParameterFromForm]
+    [SupplyParameterFromQuery] private int Id { get; set; }
     private Teachers? Teachers { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        Teachers ??= await context.Teachers.FirstOrDefaultAsync(m => m.Id == Id);
-
-        if (Teachers is null)
-        {
-            NavigationManager.NavigateTo("notfound");
-        }
+        Teachers = await context.Teachers.FirstOrDefaultAsync(m => m.Id == Id);
+        if (Teachers is null) NavigationManager.NavigateTo("notfound");
     }
 
     private async Task OnPhotoUpload(InputFileChangeEventArgs e)
@@ -123,30 +101,24 @@ else
     private async Task UpdateTeachers()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Attach(Teachers!).State = EntityState.Modified;
-
-        try
+        var existing = await context.Teachers.FirstOrDefaultAsync(t => t.Id == Teachers!.Id);
+        if (existing == null)
         {
-            await context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!TeachersExists(Teachers!.Id))
-            {
-                NavigationManager.NavigateTo("notfound");
-            }
-            else
-            {
-                throw;
-            }
+            NavigationManager.NavigateTo("notfound");
+            return;
         }
 
+        existing.LastName = Teachers.LastName;
+        existing.FirstName = Teachers.FirstName;
+        existing.MiddleName = Teachers.MiddleName;
+        existing.DateOfBirth = Teachers.DateOfBirth;
+        existing.Email = Teachers.Email;
+        existing.Phone = Teachers.Phone;
+        existing.PhotoData = Teachers.PhotoData;
+        existing.WorkSince = Teachers.WorkSince;
+        existing.Rate = Teachers.Rate;
+
+        await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/teachers");
-    }
-
-    private bool TeachersExists(int id)
-    {
-        using var context = DbFactory.CreateDbContext();
-        return context.Teachers.Any(e => e.Id == id);
     }
 }

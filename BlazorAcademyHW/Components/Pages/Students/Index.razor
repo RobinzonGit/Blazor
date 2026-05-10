@@ -8,12 +8,8 @@
 @inject IDbContextFactory<BlazorAcademyHW.Data.BlazorAcademyHWContext> DbFactory
 
 <PageTitle>Index</PageTitle>
-
 <h1>Index</h1>
-
-<p>
-    <a href="students/create">Create New</a>
-</p>
+<p><a href="students/create">Create New</a></p>
 
 <div class="mb-3 d-flex gap-2 align-items-center">
     <label class="form-label mb-0">Filter by direction:</label>
@@ -44,7 +40,6 @@
     <PropertyColumn Property="students => students.DateOfBirth" />
     <PropertyColumn Property="students => students.Email" />
     <PropertyColumn Property="students => students.Phone" />
-    
     <TemplateColumn Title="Direction">
         @if (context.Group?.Direction != null)
         {
@@ -55,18 +50,15 @@
             <span class="text-muted">—</span>
         }
     </TemplateColumn>
-    
     <TemplateColumn Title="Photo">
         @if (context.Photo != null)
         {
             <img src="data:image/jpeg;base64,@Convert.ToBase64String(context.Photo)" style="max-width:50px;max-height:50px;" />
         }
     </TemplateColumn>
-    
     <TemplateColumn Title="Group">
         @context.Group?.Name
     </TemplateColumn>
-
     <TemplateColumn Context="students">
         <a href="@($"students/edit?id={students.Id}")">Edit</a> |
         <a href="@($"students/details?id={students.Id}")">Details</a> |
@@ -98,15 +90,15 @@
             .Include(s => s.Group)
                 .ThenInclude(g => g!.Direction)
             .ToListAsync();
+        StateHasChanged();
     }
 
     private async Task OnDirectionChanged(ChangeEventArgs e)
     {
         selectedDirectionId = int.Parse(e.Value?.ToString() ?? "0");
-        if (selectedDirectionId == 0)
-            filteredGroups = allGroups;
-        else
-            filteredGroups = allGroups.Where(g => g.DirectionId == selectedDirectionId).ToList();
+        filteredGroups = selectedDirectionId == 0
+            ? allGroups
+            : allGroups.Where(g => g.DirectionId == selectedDirectionId).ToList();
         selectedGroupId = 0;
         await ApplyFilter();
     }
@@ -121,14 +113,11 @@
     {
         var q = context.Students.Include(s => s.Group).ThenInclude(g => g!.Direction).AsQueryable();
         if (selectedDirectionId != 0)
-        {
             q = q.Where(s => s.Group != null && s.Group.DirectionId == selectedDirectionId);
-        }
         if (selectedGroupId != 0)
-        {
             q = q.Where(s => s.GroupId == selectedGroupId);
-        }
         studentsList = await q.ToListAsync();
+        StateHasChanged();
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

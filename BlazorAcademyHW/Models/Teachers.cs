@@ -14,7 +14,7 @@ namespace BlazorAcademyHW.Models
         public string? Phone { get; set; }
         public byte[]? PhotoData { get; set; }
         public DateTime WorkSince { get; set; }
-        public int Rate { get; set; }
+        public int? Rate { get; set; }                // int, а не decimal
 
         [JsonIgnore]
         public virtual ICollection<TeacherDiscipline> TeacherDisciplines { get; set; } = new List<TeacherDiscipline>();
