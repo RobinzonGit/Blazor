@@ -14,10 +14,6 @@
     <a href="teachers/create">Create New</a>
 </p>
 
-@code {
-    private List<Teachers> teachersList = new();
-}
-
 <QuickGrid Class="table" Items="teachersList.AsQueryable()">
     <PropertyColumn Property="teachers => teachers.LastName" />
     <PropertyColumn Property="teachers => teachers.FirstName" />
@@ -47,6 +43,8 @@
 
 @code {
     private BlazorAcademyHWContext context = default!;
+    private List<Teachers> teachersList = new();
+
     protected override void OnInitialized()
     {
         context = DbFactory.CreateDbContext();

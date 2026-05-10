@@ -43,7 +43,16 @@
         </dl>
         <dl class="row">
             <dt class="col-sm-2">Photo</dt>
-            <dd class="col-sm-10">@teachers.PhotoData</dd>
+            <dd class="col-sm-10">
+                @if (teachers.PhotoData != null && teachers.PhotoData.Length > 0)
+                {
+                    <span>Есть фото</span>
+                }
+                else
+                {
+                    <span>Нет фото</span>
+                }
+            </dd>
         </dl>
         <dl class="row">
             <dt class="col-sm-2">WorkSince</dt>

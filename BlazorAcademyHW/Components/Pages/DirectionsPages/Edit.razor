@@ -4,97 +4,49 @@
 @inject IDbContextFactory<BlazorAcademyHW.Data.BlazorAcademyHWContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Edit Direction</PageTitle>
 
-<h1>Edit</h1>
+<h1>Edit Direction</h1>
 
-<h2>Directions</h2>
-<hr />
-@if (Directions is null)
+@if (Direction is null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <div class="row">
-        <div class="col-md-4">
-            <EditForm method="post" Model="editModel" OnValidSubmit="UpdateDirections" FormName="edit" Enhance>
-                <DataAnnotationsValidator />
-                <ValidationSummary role="alert"/>
-                <input type="hidden" name="Directions.Id" value="@editModel.Id" />
-                <div class="mb-3">
-                <span class="text-danger">*</span>
-                    <label for="name" class="form-label">Name:</label>
-                    <InputText id="name" @bind-Value="editModel.Name" class="form-control" aria-required="true"/>
-                    <ValidationMessage For="() => editModel.Name" class="text-danger" />
-                </div>
-                <button type="submit" class="btn btn-primary">Save</button>
-            </EditForm>
+    <EditForm Model="Direction" OnValidSubmit="UpdateDirection" FormName="editDirection" Enhance>
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <input type="hidden" name="Direction.Id" value="@Direction.Id" />
+        <div class="mb-3">
+            <label for="name" class="form-label">Name:</label>
+            <InputText id="name" @bind-Value="Direction.Name" class="form-control" />
+            <ValidationMessage For="() => Direction.Name" class="text-danger" />
         </div>
-    </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/directions" class="btn btn-secondary">Cancel</a>
+    </EditForm>
 }
 
-<div>
-    <a href="/directions">Back to List</a>
-</div>
-
 @code {
-    [SupplyParameterFromQuery]
-    private int Id { get; set; }
-
-    private Directions? Directions { get; set; }
-    private Directions editModel = new();
+    [SupplyParameterFromQuery] private int Id { get; set; }
+    [SupplyParameterFromForm] private Directions? Direction { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        Directions = await context.Directions.FirstOrDefaultAsync(m => m.Id == Id);
-
-        if (Directions is null)
+        if (Direction == null)
         {
-            NavigationManager.NavigateTo("notfound");
-            return;
+            using var context = DbFactory.CreateDbContext();
+            Direction = await context.Directions.FirstOrDefaultAsync(d => d.Id == Id);
+            if (Direction == null) NavigationManager.NavigateTo("notfound");
         }
-
-        // copy to edit model to bind EditForm
-        editModel = new Directions { Id = Directions.Id, Name = Directions.Name };
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
-    private async Task UpdateDirections()
+    private async Task UpdateDirection()
     {
         using var context = DbFactory.CreateDbContext();
-        var existing = await context.Directions.FirstOrDefaultAsync(d => d.Id == editModel.Id);
-        if (existing is null)
-        {
-            NavigationManager.NavigateTo("notfound");
-            return;
-        }
-        existing.Name = editModel.Name;
-
-        try
-        {
-            await context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!DirectionsExists(Directions!.Id))
-            {
-                NavigationManager.NavigateTo("notfound");
-            }
-            else
-            {
-                throw;
-            }
-        }
-
+        context.Attach(Direction!).State = EntityState.Modified;
+        await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/directions");
-    }
-
-    private bool DirectionsExists(int id)
-    {
-        using var context = DbFactory.CreateDbContext();
-        return context.Directions.Any(e => e.Id == id);
     }
 }

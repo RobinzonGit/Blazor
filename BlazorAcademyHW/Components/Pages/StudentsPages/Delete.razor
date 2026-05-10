@@ -43,7 +43,16 @@
         </dl>
         <dl class="row">
             <dt class="col-sm-2">Photo</dt>
-            <dd class="col-sm-10">@students.Photo</dd>
+            <dd class="col-sm-10">
+                @if (students.Photo != null)
+                {
+                    <span>Есть фото</span>
+                }
+                else
+                {
+                    <span>Нет фото</span>
+                }
+            </dd>
         </dl>
         <dl class="row">
             <dt class="col-sm-2">Group</dt>

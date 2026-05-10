@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-//using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace BlazorAcademyHW.Models
 {
@@ -16,7 +16,7 @@ namespace BlazorAcademyHW.Models
         public DateTime WorkSince { get; set; }
         public int Rate { get; set; }
 
-        // Many-to-many with Disciplines
+        [JsonIgnore]
         public virtual ICollection<TeacherDiscipline> TeacherDisciplines { get; set; } = new List<TeacherDiscipline>();
     }
 }

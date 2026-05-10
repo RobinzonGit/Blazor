@@ -17,7 +17,7 @@
 
 <div class="mb-3 d-flex gap-2 align-items-center">
     <label class="form-label mb-0">Filter by direction:</label>
-    <select @bind="selectedDirectionId" class="form-select" style="width:220px;">
+    <select value="@selectedDirectionId" @onchange="OnDirectionChanged" class="form-select" style="width:220px;">
         <option value="0">-- All Directions --</option>
         @foreach (var d in directions)
         {
@@ -26,9 +26,9 @@
     </select>
 
     <label class="form-label mb-0">Filter by group:</label>
-    <select @bind="selectedGroupId" class="form-select" style="width:220px;">
+    <select value="@selectedGroupId" @onchange="OnGroupChanged" class="form-select" style="width:220px;">
         <option value="0">-- All Groups --</option>
-        @foreach (var g in groups)
+        @foreach (var g in filteredGroups)
         {
             <option value="@g.Id">@g.Name (@g.Direction?.Name)</option>
         }
@@ -44,14 +44,27 @@
     <PropertyColumn Property="students => students.DateOfBirth" />
     <PropertyColumn Property="students => students.Email" />
     <PropertyColumn Property="students => students.Phone" />
-    <TemplateColumn Context="students">
-        @if (students.Photo != null)
+    
+    <TemplateColumn Title="Direction">
+        @if (context.Group?.Direction != null)
         {
-            <img src="data:image/jpeg;base64,@Convert.ToBase64String(students.Photo)" style="max-width:50px;max-height:50px;" />
+            @context.Group.Direction.Name
+        }
+        else
+        {
+            <span class="text-muted">—</span>
         }
     </TemplateColumn>
-    <TemplateColumn Context="students">
-        @students.Group?.Name
+    
+    <TemplateColumn Title="Photo">
+        @if (context.Photo != null)
+        {
+            <img src="data:image/jpeg;base64,@Convert.ToBase64String(context.Photo)" style="max-width:50px;max-height:50px;" />
+        }
+    </TemplateColumn>
+    
+    <TemplateColumn Title="Group">
+        @context.Group?.Name
     </TemplateColumn>
 
     <TemplateColumn Context="students">
@@ -64,7 +77,8 @@
 @code {
     private BlazorAcademyHWContext context = default!;
     private List<Students> studentsList = new();
-    private List<Groups> groups = new();
+    private List<Groups> allGroups = new();
+    private List<Groups> filteredGroups = new();
     private List<Directions> directions = new();
     private int selectedDirectionId = 0;
     private int selectedGroupId = 0;
@@ -73,13 +87,39 @@
     {
         context = DbFactory.CreateDbContext();
         directions = await context.Directions.ToListAsync();
-        groups = await context.Groups.Include(g => g.Direction).ToListAsync();
-        studentsList = await context.Students.Include(s => s.Group).ThenInclude(g => g.Direction).ToListAsync();
+        allGroups = await context.Groups.Include(g => g.Direction).ToListAsync();
+        filteredGroups = allGroups;
+        await LoadStudents();
+    }
+
+    private async Task LoadStudents()
+    {
+        studentsList = await context.Students
+            .Include(s => s.Group)
+                .ThenInclude(g => g!.Direction)
+            .ToListAsync();
+    }
+
+    private async Task OnDirectionChanged(ChangeEventArgs e)
+    {
+        selectedDirectionId = int.Parse(e.Value?.ToString() ?? "0");
+        if (selectedDirectionId == 0)
+            filteredGroups = allGroups;
+        else
+            filteredGroups = allGroups.Where(g => g.DirectionId == selectedDirectionId).ToList();
+        selectedGroupId = 0;
+        await ApplyFilter();
+    }
+
+    private async Task OnGroupChanged(ChangeEventArgs e)
+    {
+        selectedGroupId = int.Parse(e.Value?.ToString() ?? "0");
+        await ApplyFilter();
     }
 
     private async Task ApplyFilter()
     {
-        var q = context.Students.Include(s => s.Group).ThenInclude(g => g.Direction).AsQueryable();
+        var q = context.Students.Include(s => s.Group).ThenInclude(g => g!.Direction).AsQueryable();
         if (selectedDirectionId != 0)
         {
             q = q.Where(s => s.Group != null && s.Group.DirectionId == selectedDirectionId);

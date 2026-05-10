@@ -15,8 +15,8 @@ namespace BlazorAcademyHW.Models
         public virtual Directions? Direction { get; set; }
 
         // Study days stored as comma-separated numbers (0=Monday ... 6=Sunday)
-        public string? StudyDays { get; set; } = string.Empty;
-
+        public string? StudyDays { get; set; } 
+        
         // Navigation property for students
         public virtual ICollection<Students> Students { get; set; } = new List<Students>();
     }

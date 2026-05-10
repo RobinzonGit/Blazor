@@ -8,53 +8,59 @@
 
 <h1>Edit</h1>
 
-<EditForm Model="@group" OnValidSubmit="UpdateGroup" FormName="editGroup" Enhance>
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+@if (group == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="group" OnValidSubmit="UpdateGroup" FormName="editGroup" Enhance>
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <InputText @bind-Value="group.Name" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Direction</label>
-        <select @bind="group.DirectionId" class="form-select">
-            <option value="0">-- Select Direction --</option>
-            @foreach (var dir in directions)
-            {
-                <option value="@dir.Id">@dir.Name</option>
-            }
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Study Days</label>
-        <div class="d-flex flex-wrap gap-2">
-            @foreach (var day in studyDaysOptions)
-            {
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" @bind="day.Selected" id="day_@day.Value" />
-                    <label class="form-check-label" for="day_@day.Value">@day.Name</label>
-                </div>
-            }
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <InputText @bind-Value="group.Name" class="form-control" />
         </div>
-    </div>
 
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a href="/groups" class="btn btn-secondary">Cancel</a>
-</EditForm>
+        <div class="mb-3">
+            <label class="form-label">Direction</label>
+            <select @bind="group.DirectionId" class="form-select">
+                <option value="0">-- Select Direction --</option>
+                @foreach (var dir in directions)
+                {
+                    <option value="@dir.Id">@dir.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Study Days</label>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var day in studyDaysOptions)
+                {
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" @bind="day.Selected" id="day_@day.Value" />
+                        <label class="form-check-label" for="day_@day.Value">@day.Name</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/groups" class="btn btn-secondary">Cancel</a>
+    </EditForm>
+}
 
 @code {
-    [SupplyParameterFromQuery]
-    private int Id { get; set; }
+    [SupplyParameterFromQuery] private int Id { get; set; }
 
-    private Groups group = new();
+    private Groups? group;
     private List<Directions> directions = new();
 
     private class DayOption
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public int Value { get; set; }
         public bool Selected { get; set; }
     }
@@ -74,14 +80,19 @@
     {
         using var context = DbFactory.CreateDbContext();
         directions = await context.Directions.ToListAsync();
+        group = await context.Groups.FirstOrDefaultAsync(g => g.Id == Id);
+        if (group == null)
+        {
+            NavigationManager.NavigateTo("notfound");
+            return;
+        }
 
-        // Load existing group for editing
-        group = await context.Groups.FirstOrDefaultAsync(g => g.Id == Id) ?? new Groups();
-
-        // Preselect study days
+        // Заполняем чекбоксы из существующей строки StudyDays
         if (!string.IsNullOrWhiteSpace(group.StudyDays))
         {
-            var selected = group.StudyDays.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => int.TryParse(s, out var v) ? v : -1).Where(v => v >= 0).ToHashSet();
+            var selected = group.StudyDays.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                           .Select(s => int.TryParse(s, out var v) ? v : -1)
+                           .Where(v => v >= 0).ToHashSet();
             foreach (var d in studyDaysOptions)
             {
                 d.Selected = selected.Contains(d.Value);
@@ -91,22 +102,17 @@
 
     private async Task UpdateGroup()
     {
-        // Save selected days as comma-separated string
-        group.StudyDays = string.Join(",", studyDaysOptions.Where(d => d.Selected).Select(d => d.Value));
-        using var context = DbFactory.CreateDbContext();
+        // ГЛАВНОЕ: формируем новую строку из выбранных чекбоксов
+        var newStudyDays = string.Join(",", studyDaysOptions.Where(d => d.Selected).Select(d => d.Value));
 
-        var existing = await context.Groups.FirstOrDefaultAsync(g => g.Id == group.Id);
-        if (existing is null)
-        {
-            // If not found, create new
-            context.Groups.Add(group);
-        }
-        else
-        {
-            existing.Name = group.Name;
-            existing.DirectionId = group.DirectionId;
-            existing.StudyDays = group.StudyDays;
-        }
+        using var context = DbFactory.CreateDbContext();
+        var existing = await context.Groups.FirstOrDefaultAsync(g => g.Id == group!.Id);
+        if (existing == null) return;
+
+        // Обновляем поля
+        existing.Name = group.Name;
+        existing.DirectionId = group.DirectionId;
+        existing.StudyDays = newStudyDays;   // присваиваем новую строку
 
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/groups");

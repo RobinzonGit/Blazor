@@ -20,39 +20,50 @@ else
         <div class="col-md-4">
             <EditForm method="post" Model="Students" OnValidSubmit="UpdateStudents" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert"/>
+                <ValidationSummary role="alert" />
                 <input type="hidden" name="Students.Id" value="@Students.Id" />
                 <div class="mb-3">
-                <span class="text-danger">*</span>
+                    <span class="text-danger">*</span>
                     <label for="lastname" class="form-label">LastName:</label>
-                    <InputText id="lastname" @bind-Value="Students.LastName" class="form-control" aria-required="true"/>
+                    <InputText id="lastname" @bind-Value="Students.LastName" class="form-control" />
                     <ValidationMessage For="() => Students.LastName" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                <span class="text-danger">*</span>
+                    <span class="text-danger">*</span>
                     <label for="firstname" class="form-label">FirstName:</label>
-                    <InputText id="firstname" @bind-Value="Students.FirstName" class="form-control" aria-required="true"/>
+                    <InputText id="firstname" @bind-Value="Students.FirstName" class="form-control" />
                     <ValidationMessage For="() => Students.FirstName" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="middlename" class="form-label">MiddleName:</label>
                     <InputText id="middlename" @bind-Value="Students.MiddleName" class="form-control" />
-                    <ValidationMessage For="() => Students.MiddleName" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="dateofbirth" class="form-label">DateOfBirth:</label>
                     <InputDate id="dateofbirth" @bind-Value="Students.DateOfBirth" class="form-control" />
-                    <ValidationMessage For="() => Students.DateOfBirth" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="email" class="form-label">Email:</label>
                     <InputText id="email" @bind-Value="Students.Email" class="form-control" />
-                    <ValidationMessage For="() => Students.Email" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="phone" class="form-label">Phone:</label>
                     <InputText id="phone" @bind-Value="Students.Phone" class="form-control" />
-                    <ValidationMessage For="() => Students.Phone" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Current Photo</label>
+                    @if (Students.Photo != null)
+                    {
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(Students.Photo)" style="max-width:150px;max-height:150px;" />
+                    }
+                    else
+                    {
+                        <p>No photo</p>
+                    }
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Change Photo</label>
+                    <InputFile OnChange="OnPhotoUpload" />
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Group</label>
@@ -63,10 +74,6 @@ else
                             <option value="@grp.Id">@grp.Name (@grp.Direction?.Name)</option>
                         }
                     </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Photo</label>
-                    <InputFile OnChange="OnPhotoUpload" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
@@ -79,57 +86,35 @@ else
 </div>
 
 @code {
-    [SupplyParameterFromQuery]
-    private int Id { get; set; }
+    [SupplyParameterFromQuery] private int Id { get; set; }
+    [SupplyParameterFromForm] private Students? Students { get; set; }
 
-    [SupplyParameterFromForm]
-    private Students? Students { get; set; }
+    private List<Groups> groups = new();
 
-    @code {
-        private List<Groups> groups = new();
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        groups = await context.Groups.Include(g => g.Direction).ToListAsync();
+        Students ??= await context.Students.Include(s => s.Group).FirstOrDefaultAsync(m => m.Id == Id);
 
-        protected override async Task OnInitializedAsync()
+        if (Students is null) NavigationManager.NavigateTo("notfound");
+    }
+
+    private async Task OnPhotoUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null && Students != null)
         {
-            using var context = DbFactory.CreateDbContext();
-            groups = await context.Groups.Include(g => g.Direction).ToListAsync();
-            Students ??= await context.Students.Include(s => s.Group).FirstOrDefaultAsync(m => m.Id == Id);
-
-            if (Students is null)
-            {
-                NavigationManager.NavigateTo("notfound");
-            }
-        }
-
-        private async Task OnPhotoUpload(InputFileChangeEventArgs e)
-        {
-            var file = e.File;
-            if (file != null && Students != null)
-            {
-                using var ms = new MemoryStream();
-                await file.OpenReadStream(maxAllowedSize: 5_000_000).CopyToAsync(ms);
-                Students.Photo = ms.ToArray();
-            }
+            using var ms = new MemoryStream();
+            await file.OpenReadStream(maxAllowedSize: 5_000_000).CopyToAsync(ms);
+            Students.Photo = ms.ToArray();
         }
     }
 
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     using var context = DbFactory.CreateDbContext();
-    //     Students ??= await context.Students.FirstOrDefaultAsync(m => m.Id == Id);
-
-    //     if (Students is null)
-    //     {
-    //         NavigationManager.NavigateTo("notfound");
-    //     }
-    // }
-
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateStudents()
     {
         using var context = DbFactory.CreateDbContext();
         context.Attach(Students!).State = EntityState.Modified;
-
         try
         {
             await context.SaveChangesAsync();
@@ -137,15 +122,9 @@ else
         catch (DbUpdateConcurrencyException)
         {
             if (!StudentsExists(Students!.Id))
-            {
                 NavigationManager.NavigateTo("notfound");
-            }
-            else
-            {
-                throw;
-            }
+            else throw;
         }
-
         NavigationManager.NavigateTo("/students");
     }
 

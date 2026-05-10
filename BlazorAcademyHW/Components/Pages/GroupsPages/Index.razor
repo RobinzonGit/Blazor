@@ -17,29 +17,28 @@
 
 <div class="mb-3 d-flex gap-2 align-items-center">
     <label class="form-label mb-0">Filter by direction:</label>
-    <select @bind="selectedDirectionId" class="form-select" style="width:250px;">
+    <select value="@selectedDirectionId" @onchange="OnDirectionChanged" class="form-select" style="width:250px;">
         <option value="0">-- All Directions --</option>
         @foreach (var d in directions)
         {
             <option value="@d.Id">@d.Name</option>
         }
     </select>
-    <button class="btn btn-secondary" @onclick="ApplyFilter">Apply</button>
 </div>
 
 <QuickGrid Class="table" Items="groupsList.AsQueryable()">
-    <PropertyColumn Property="groups => groups.Name" />
-    <TemplateColumn Context="groups">
-        @groups.Direction?.Name
+    <PropertyColumn Property="g => g.Name" />
+    <TemplateColumn Context="g">
+        @g.Direction?.Name
     </TemplateColumn>
-    <TemplateColumn Context="groups" Title="Study Days">
-        @DisplayStudyDays(groups.StudyDays)
+    <TemplateColumn Context="g" Title="Study Days">
+        @DisplayStudyDays(g.StudyDays)
     </TemplateColumn>
 
-    <TemplateColumn Context="groups">
-        <a href="@($"groups/edit?id={groups.Id}")">Edit</a> |
-        <a href="@($"groups/details?id={groups.Id}")">Details</a> |
-        <a href="@($"groups/delete?id={groups.Id}")">Delete</a>
+    <TemplateColumn Context="g">
+        <a href="@($"groups/edit?id={g.Id}")">Edit</a> |
+        <a href="@($"groups/details?id={g.Id}")">Details</a> |
+        <a href="@($"groups/delete?id={g.Id}")">Delete</a>
     </TemplateColumn>
 </QuickGrid>
 
@@ -53,20 +52,23 @@
     {
         context = DbFactory.CreateDbContext();
         directions = await context.Directions.ToListAsync();
-        groupsList = await context.Groups.Include(g => g.Direction).ToListAsync();
+        await LoadGroups();
     }
 
-    private async Task ApplyFilter()
+    private async Task LoadGroups()
     {
-        if (selectedDirectionId == 0)
+        var query = context.Groups.Include(g => g.Direction).AsQueryable();
+        if (selectedDirectionId != 0)
         {
-            groupsList = await context.Groups.Include(g => g.Direction).ToListAsync();
+            query = query.Where(g => g.DirectionId == selectedDirectionId);
         }
-        else
-        {
-            groupsList = await context.Groups.Include(g => g.Direction)
-                .Where(g => g.DirectionId == selectedDirectionId).ToListAsync();
-        }
+        groupsList = await query.ToListAsync();
+    }
+
+    private async Task OnDirectionChanged(ChangeEventArgs e)
+    {
+        selectedDirectionId = int.Parse(e.Value?.ToString() ?? "0");
+        await LoadGroups();
     }
 
     private static string DisplayStudyDays(string? studyDays)
@@ -74,11 +76,8 @@
         if (string.IsNullOrWhiteSpace(studyDays)) return string.Empty;
         var map = new[] { "Пн.", "Вт.", "Ср.", "Чт.", "Пт.", "Сб.", "Вс." };
         var parts = studyDays.Split(',', StringSplitOptions.RemoveEmptyEntries);
-        var names = parts.Select(p =>
-        {
-            if (int.TryParse(p, out var v) && v >= 0 && v < map.Length) return map[v];
-            return null;
-        }).Where(x => x != null)!;
+        var names = parts.Select(p => int.TryParse(p, out var v) && v >= 0 && v < map.Length ? map[v] : null)
+                         .Where(x => x != null);
         return string.Join(',', names);
     }
 
