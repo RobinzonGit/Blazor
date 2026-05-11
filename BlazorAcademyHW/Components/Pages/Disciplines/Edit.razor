@@ -32,14 +32,19 @@ else
                 </div>
                 <div class="mb-3">
                     <label>Teachers</label>
-                    <select multiple class="form-select" @onchange="OnTeachersSelectionChanged">
+                    <div class="border rounded p-2" style="max-height: 200px; overflow-y: auto;">
                         @foreach (var t in allTeachers)
                         {
-                            <option value="@t.Id" selected="@selectedTeacherIds.Contains(t.Id)">
-                                @t.LastName @t.FirstName
-                            </option>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="@t.Id"
+                                       checked="@selectedTeacherIds.Contains(t.Id)"
+                                       @onchange="e => ToggleTeacher(t.Id, (bool)(e.Value ?? false))" />
+                                <label class="form-check-label" for="@($"teacher_{t.Id}")">
+                                    @t.LastName @t.FirstName
+                                </label>
+                            </div>
                         }
-                    </select>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
@@ -68,12 +73,17 @@ else
         selectedTeacherIds = Disciplines.TeacherDisciplines.Select(td => td.TeacherId).ToList();
     }
 
-    private void OnTeachersSelectionChanged(ChangeEventArgs e)
+    private void ToggleTeacher(int teacherId, bool isChecked)
     {
-        if (e.Value is string[] values)
-            selectedTeacherIds = values.Select(int.Parse).ToList();
+        if (isChecked)
+        {
+            if (!selectedTeacherIds.Contains(teacherId))
+                selectedTeacherIds.Add(teacherId);
+        }
         else
-            selectedTeacherIds.Clear();
+        {
+            selectedTeacherIds.Remove(teacherId);
+        }
     }
 
     private async Task UpdateDisciplines()

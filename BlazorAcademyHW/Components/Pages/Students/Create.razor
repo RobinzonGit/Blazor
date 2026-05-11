@@ -49,18 +49,28 @@
                 <ValidationMessage For="() => Students.Phone" class="text-danger" /> 
             </div>        
             <div class="mb-3">
+                <label class="form-label">Photo</label>
+                <InputFile OnChange="OnPhotoUpload" />
+            </div>
+            <div class="mb-3">
                 <label class="form-label">Group</label>
                 <select @bind="Students.GroupId" class="form-select">
                     <option value="">-- Select Group --</option>
                     @foreach (var grp in groups)
                     {
-                        <option value="@grp.Id">@grp.Name (@grp.Direction?.Name)</option>
+                        <option value="@grp.Id">@grp.Name</option>
                     }
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">Photo</label>
-                <InputFile OnChange="OnPhotoUpload" />
+                <label class="form-label">Direction</label>
+                <select @bind="Students.GroupId" class="form-select">
+                    <option value="">-- Select Direction --</option>
+                    @foreach (var grp in groups)
+                    {
+                        <option value="@grp.Id">@grp.Direction?.Name</option>
+                    }
+                </select>
             </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
