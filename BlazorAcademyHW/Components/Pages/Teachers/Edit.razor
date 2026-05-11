@@ -52,6 +52,7 @@ else
                     @if (Teachers.PhotoData != null)
                     {
                         <img src="data:image/jpeg;base64,@Convert.ToBase64String(Teachers.PhotoData)" style="max-width:150px; max-height:150px;" />
+                        <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="DeletePhoto">Delete Photo</button>
                     }
                     else
                     {
@@ -97,6 +98,12 @@ else
             await file.OpenReadStream(maxAllowedSize: 5_000_000).CopyToAsync(ms);
             Teachers.PhotoData = ms.ToArray();
         }
+    }
+
+    private void DeletePhoto()
+    {
+        if (Teachers != null)
+            Teachers.PhotoData = null;
     }
 
     private async Task UpdateTeachers()

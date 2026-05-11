@@ -52,6 +52,7 @@ else
                     @if (Students.Photo != null)
                     {
                         <img src="data:image/jpeg;base64,@Convert.ToBase64String(Students.Photo)" style="max-width:150px;max-height:150px;" />
+                        <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="DeletePhoto">Delete Photo</button>
                     }
                     else
                     {
@@ -68,7 +69,17 @@ else
                         <option value="">-- Select Group --</option>
                         @foreach (var grp in groups)
                         {
-                            <option value="@grp.Id">@grp.Name (@grp.Direction?.Name)</option>
+                            <option value="@grp.Id">@grp.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Direction</label>
+                    <select @bind="Students.GroupId" class="form-select">
+                        <option value="">-- Select Direction --</option>
+                        @foreach (var grp in groups)
+                        {
+                            <option value="@grp.Id">@grp.Direction?.Name</option>
                         }
                     </select>
                 </div>
@@ -101,6 +112,12 @@ else
             await file.OpenReadStream(maxAllowedSize: 5_000_000).CopyToAsync(ms);
             Students.Photo = ms.ToArray();
         }
+    }
+
+    private void DeletePhoto()
+    {
+        if (Students != null)
+            Students.Photo = null;
     }
 
     private async Task UpdateStudents()

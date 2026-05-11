@@ -4,8 +4,8 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BlazorAcademyHW.Models
 @using BlazorAcademyHW.Data
-@implements IAsyncDisposable
 @inject IDbContextFactory<BlazorAcademyHW.Data.BlazorAcademyHWContext> DbFactory
+@rendermode InteractiveServer
 
 <PageTitle>Index</PageTitle>
 <h1>Index</h1>
@@ -26,14 +26,14 @@
         <option value="0">-- All Groups --</option>
         @foreach (var g in filteredGroups)
         {
-            <option value="@g.Id">@g.Name (@g.Direction?.Name)</option>
+            <option value="@g.Id">@g.Name </option>
         }
     </select>
 
     <button class="btn btn-secondary" @onclick="ApplyFilter">Apply</button>
 </div>
 
-<QuickGrid Class="table" Items="studentsList.AsQueryable()">
+<QuickGrid Class="table" Items="studentsList.AsQueryable()" @key="filterKey">
     <PropertyColumn Property="students => students.LastName" />
     <PropertyColumn Property="students => students.FirstName" />
     <PropertyColumn Property="students => students.MiddleName" />
@@ -55,6 +55,10 @@
         {
             <img src="data:image/jpeg;base64,@Convert.ToBase64String(context.Photo)" style="max-width:50px;max-height:50px;" />
         }
+        else
+        {
+            <span>Нет фото</span>
+        }
     </TemplateColumn>
     <TemplateColumn Title="Group">
         @context.Group?.Name
@@ -67,30 +71,45 @@
 </QuickGrid>
 
 @code {
-    private BlazorAcademyHWContext context = default!;
     private List<Students> studentsList = new();
     private List<Groups> allGroups = new();
     private List<Groups> filteredGroups = new();
     private List<Directions> directions = new();
     private int selectedDirectionId = 0;
     private int selectedGroupId = 0;
+    private int filterKey = 0;  // для принудительного обновления QuickGrid
 
     protected override async Task OnInitializedAsync()
     {
-        context = DbFactory.CreateDbContext();
-        directions = await context.Directions.ToListAsync();
-        allGroups = await context.Groups.Include(g => g.Direction).ToListAsync();
-        filteredGroups = allGroups;
-        await LoadStudents();
+        await LoadFilters();
+        await ApplyFilter();
     }
 
-    private async Task LoadStudents()
+    private async Task LoadFilters()
     {
-        studentsList = await context.Students
+        using var ctx = DbFactory.CreateDbContext();
+        directions = await ctx.Directions.AsNoTracking().ToListAsync();
+        allGroups = await ctx.Groups.Include(g => g.Direction).AsNoTracking().ToListAsync();
+        filteredGroups = allGroups;
+    }
+
+    private async Task ApplyFilter()
+    {
+        using var ctx = DbFactory.CreateDbContext();
+        var query = ctx.Students
             .Include(s => s.Group)
                 .ThenInclude(g => g!.Direction)
-            .ToListAsync();
-        StateHasChanged();
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (selectedDirectionId != 0)
+            query = query.Where(s => s.Group != null && s.Group.DirectionId == selectedDirectionId);
+
+        if (selectedGroupId != 0)
+            query = query.Where(s => s.GroupId == selectedGroupId);
+
+        studentsList = await query.ToListAsync();
+        filterKey++;  // меняем ключ → QuickGrid пересоздаётся → отображает новые данные
     }
 
     private async Task OnDirectionChanged(ChangeEventArgs e)
@@ -108,17 +127,4 @@
         selectedGroupId = int.Parse(e.Value?.ToString() ?? "0");
         await ApplyFilter();
     }
-
-    private async Task ApplyFilter()
-    {
-        var q = context.Students.Include(s => s.Group).ThenInclude(g => g!.Direction).AsQueryable();
-        if (selectedDirectionId != 0)
-            q = q.Where(s => s.Group != null && s.Group.DirectionId == selectedDirectionId);
-        if (selectedGroupId != 0)
-            q = q.Where(s => s.GroupId == selectedGroupId);
-        studentsList = await q.ToListAsync();
-        StateHasChanged();
-    }
-
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }
