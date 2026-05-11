@@ -8,7 +8,7 @@
 @rendermode InteractiveServer
 
 <PageTitle>Index</PageTitle>
-<h1>Index</h1>
+<h1>Students</h1>
 <p><a href="students/create">Create New</a></p>
 
 <div class="mb-3 d-flex gap-2 align-items-center">
@@ -26,49 +26,59 @@
         <option value="0">-- All Groups --</option>
         @foreach (var g in filteredGroups)
         {
-            <option value="@g.Id">@g.Name </option>
+            <option value="@g.Id">@g.Name</option>
         }
     </select>
 
     <button class="btn btn-secondary" @onclick="ApplyFilter">Apply</button>
 </div>
 
-<QuickGrid Class="table" Items="studentsList.AsQueryable()" @key="filterKey">
-    <PropertyColumn Property="students => students.LastName" />
-    <PropertyColumn Property="students => students.FirstName" />
-    <PropertyColumn Property="students => students.MiddleName" />
-    <PropertyColumn Property="students => students.DateOfBirth" />
-    <PropertyColumn Property="students => students.Email" />
-    <PropertyColumn Property="students => students.Phone" />
-    <TemplateColumn Title="Direction">
-        @if (context.Group?.Direction != null)
-        {
-            @context.Group.Direction.Name
-        }
-        else
-        {
-            <span class="text-muted">—</span>
-        }
-    </TemplateColumn>
-    <TemplateColumn Title="Photo">
-        @if (context.Photo != null)
-        {
-            <img src="data:image/jpeg;base64,@Convert.ToBase64String(context.Photo)" style="max-width:50px;max-height:50px;" />
-        }
-        else
-        {
-            <span>Нет фото</span>
-        }
-    </TemplateColumn>
-    <TemplateColumn Title="Group">
-        @context.Group?.Name
-    </TemplateColumn>
-    <TemplateColumn Context="students">
-        <a href="@($"students/edit?id={students.Id}")">Edit</a> |
-        <a href="@($"students/details?id={students.Id}")">Details</a> |
-        <a href="@($"students/delete?id={students.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
+<div class="student-grid" style="overflow-x: auto;">
+    <QuickGrid Class="table table-striped" Items="studentsList.AsQueryable()" Pagination="pagination">
+        <PropertyColumn Property="students => students.LastName" Sortable="true" Title="LastName" />
+        <PropertyColumn Property="students => students.FirstName" Sortable="true" Title="FirstName" />
+        <PropertyColumn Property="students => students.MiddleName" Sortable="true" Title="MiddleName" />
+        <PropertyColumn Property="students => students.DateOfBirth" Sortable="true" Title="DateOfBirth" />
+        <PropertyColumn Property="students => students.Email" Sortable="true" Title="Email" />
+        <PropertyColumn Property="students => students.Phone" Sortable="true" Title="Phone" />
+        <PropertyColumn Property="students => students.Group.Direction.Name" Sortable="true" Title="Direction" />
+        <TemplateColumn Title="Photo">
+            @if (context.Photo != null)
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(context.Photo)" style="max-width:50px;max-height:50px;" />
+            }
+            else
+            {
+                <span>Нет фото</span>
+            }
+        </TemplateColumn>
+        <PropertyColumn Property="students => students.Group.Name" Sortable="true" Title="Group" />
+        <Paginator State="pagination" />
+        <TemplateColumn Context="students">
+            <a href="@($"students/edit?id={students.Id}")">Edit</a> |
+            <a href="@($"students/details?id={students.Id}")">Details</a> |
+            <a href="@($"students/delete?id={students.Id}")">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+
+<style>
+    .student-grid table {
+        table-layout: fixed;
+        width: 2050px; /* сумма ширин всех столбцов */
+    }
+    .student-grid th:nth-child(1), .student-grid td:nth-child(1) { width: 200px; } /* LastName */
+    .student-grid th:nth-child(2), .student-grid td:nth-child(2) { width: 200px; } /* FirstName */
+    .student-grid th:nth-child(3), .student-grid td:nth-child(3) { width: 250px; } /* MiddleName */
+    .student-grid th:nth-child(4), .student-grid td:nth-child(4) { width: 200px; } /* DateOfBirth */
+    .student-grid th:nth-child(5), .student-grid td:nth-child(5) { width: 200px; } /* Email */
+    .student-grid th:nth-child(6), .student-grid td:nth-child(6) { width: 200px; } /* Phone */
+    .student-grid th:nth-child(7), .student-grid td:nth-child(7) { width: 200px; } /* Direction */
+    .student-grid th:nth-child(8), .student-grid td:nth-child(8) { width: 200px; }  /* Photo */
+    .student-grid th:nth-child(9), .student-grid td:nth-child(9) { width: 200px; } /* Group */
+    .student-grid th:nth-child(10), .student-grid td:nth-child(10) { width: 200px; } /* Actions */
+</style>
 
 @code {
     private List<Students> studentsList = new();
@@ -77,7 +87,7 @@
     private List<Directions> directions = new();
     private int selectedDirectionId = 0;
     private int selectedGroupId = 0;
-    private int filterKey = 0;  // для принудительного обновления QuickGrid
+    private PaginationState pagination = new() { ItemsPerPage = 8 };
 
     protected override async Task OnInitializedAsync()
     {
@@ -109,7 +119,7 @@
             query = query.Where(s => s.GroupId == selectedGroupId);
 
         studentsList = await query.ToListAsync();
-        filterKey++;  // меняем ключ → QuickGrid пересоздаётся → отображает новые данные
+        await pagination.SetCurrentPageIndexAsync(0);
     }
 
     private async Task OnDirectionChanged(ChangeEventArgs e)
