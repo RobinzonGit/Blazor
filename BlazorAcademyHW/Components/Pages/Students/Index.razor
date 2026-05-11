@@ -65,18 +65,18 @@
 <style>
     .student-grid table {
         table-layout: fixed;
-        width: 2050px; /* сумма ширин всех столбцов */
+        width: 100%;               /* теперь ширина по родителю */
     }
-    .student-grid th:nth-child(1), .student-grid td:nth-child(1) { width: 150px; } /* LastName */
-    .student-grid th:nth-child(2), .student-grid td:nth-child(2) { width: 200px; } /* FirstName */
-    .student-grid th:nth-child(3), .student-grid td:nth-child(3) { width: 200px; } /* MiddleName */
-    .student-grid th:nth-child(4), .student-grid td:nth-child(4) { width: 100px; } /* Age */
-    .student-grid th:nth-child(5), .student-grid td:nth-child(5) { width: 200px; } /* Email */
-    .student-grid th:nth-child(6), .student-grid td:nth-child(6) { width: 200px; } /* Phone */
-    .student-grid th:nth-child(7), .student-grid td:nth-child(7) { width: 400px; } /* Direction */
-    .student-grid th:nth-child(8), .student-grid td:nth-child(8) { width: 200px; } /* Photo */
-    .student-grid th:nth-child(9), .student-grid td:nth-child(9) { width: 200px; } /* Group */
-    .student-grid th:nth-child(10), .student-grid td:nth-child(10) { width: 200px; } /* Actions */
+    .student-grid th:nth-child(1), .student-grid td:nth-child(1) { width: 9%; }  /* LastName */
+    .student-grid th:nth-child(2), .student-grid td:nth-child(2) { width: 10%; }  /* FirstName */
+    .student-grid th:nth-child(3), .student-grid td:nth-child(3) { width: 11%; }  /* MiddleName */
+    .student-grid th:nth-child(4), .student-grid td:nth-child(4) { width:  6%; }  /* Age */
+    .student-grid th:nth-child(5), .student-grid td:nth-child(5) { width: 11%; }  /* Email */
+    .student-grid th:nth-child(6), .student-grid td:nth-child(6) { width: 9%; }  /* Phone */
+    .student-grid th:nth-child(7), .student-grid td:nth-child(7) { width: 15%; }  /* Direction */
+    .student-grid th:nth-child(8), .student-grid td:nth-child(8) { width:  10%; }  /* Photo */
+    .student-grid th:nth-child(9), .student-grid td:nth-child(9) { width:  8%; }  /* Group */
+    .student-grid th:nth-child(10), .student-grid td:nth-child(10) { width: 10%; } /* Actions */
 </style>
 
 @code {

@@ -1,38 +1,53 @@
 ﻿@page "/directions"
 @using Microsoft.EntityFrameworkCore
+@using System.Linq
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BlazorAcademyHW.Models
 @using BlazorAcademyHW.Data
-@implements IAsyncDisposable
 @inject IDbContextFactory<BlazorAcademyHW.Data.BlazorAcademyHWContext> DbFactory
 @rendermode InteractiveServer
 
 <PageTitle>Index</PageTitle>
+<h1>Directions</h1>
+<p><a href="directions/create">Create New</a></p>
 
-<h1>Index</h1>
+<div class="direction-grid" style="overflow-x: auto;">
+    <QuickGrid Class="table table-striped" Items="directionsList.AsQueryable()" Pagination="pagination">
+        <PropertyColumn Property="d => d.Name" Sortable="true" Title="Name" />
+        <Paginator State="pagination" />
+        <TemplateColumn Context="d">
+            <a href="@($"directions/edit?id={d.Id}")">Edit</a> |
+            <a href="@($"directions/details?id={d.Id}")">Details</a> |
+            <a href="@($"directions/delete?id={d.Id}")">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
 
-<p>
-    <a href="directions/create">Create New</a>
-</p>
 
-<QuickGrid Class="table" Items="context.Directions">
-    <PropertyColumn Property="directions => directions.Name" />
-
-    <TemplateColumn Context="directions">
-        <a href="@($"directions/edit?id={directions.Id}")">Edit</a> |
-        <a href="@($"directions/details?id={directions.Id}")">Details</a> |
-        <a href="@($"directions/delete?id={directions.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
+<style>
+    .direction-grid table {
+        table-layout: fixed;
+        width: 100%;
+    }
+    .direction-grid th:nth-child(1), .direction-grid td:nth-child(1) { width: 60%; } /* Name */
+    .direction-grid th:nth-child(2), .direction-grid td:nth-child(2) { width: 40%; } /* Actions */
+</style>
 
 @code {
-    private BlazorAcademyHWContext context = default!;
+    private List<Directions> directionsList = new();
+    private PaginationState pagination = new() { ItemsPerPage = 4 };
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        context = DbFactory.CreateDbContext();
+        await LoadDirections();
     }
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+    private async Task LoadDirections()
+    {
+        using var ctx = DbFactory.CreateDbContext();
+        directionsList = await ctx.Directions
+            .AsNoTracking()
+            .ToListAsync();
+        await pagination.SetCurrentPageIndexAsync(0);
+    }
 }
- 

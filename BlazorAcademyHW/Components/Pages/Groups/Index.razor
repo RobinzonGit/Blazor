@@ -4,12 +4,11 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BlazorAcademyHW.Models
 @using BlazorAcademyHW.Data
-@implements IAsyncDisposable
 @inject IDbContextFactory<BlazorAcademyHW.Data.BlazorAcademyHWContext> DbFactory
 @rendermode InteractiveServer
 
 <PageTitle>Index</PageTitle>
-<h1>Index</h1>
+<h1>Groups</h1>
 <p><a href="groups/create">Create New</a></p>
 
 <div class="mb-3 d-flex gap-2 align-items-center">
@@ -23,41 +22,62 @@
     </select>
 </div>
 
-<QuickGrid Class="table" Items="groupsList.AsQueryable()">
-    <PropertyColumn Property="g => g.Name" />
-    <TemplateColumn Context="g">
-        @g.Direction?.Name
-    </TemplateColumn>
-    <TemplateColumn Context="g" Title="Study Days">
-        @DisplayStudyDays(g.StudyDays)
-    </TemplateColumn>
-    <TemplateColumn Context="g">
-        <a href="@($"groups/edit?id={g.Id}")">Edit</a> |
-        <a href="@($"groups/details?id={g.Id}")">Details</a> |
-        <a href="@($"groups/delete?id={g.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
+<div class="group-grid" style="overflow-x: auto;">
+    <QuickGrid Class="table table-striped" Items="groupsList.AsQueryable()" Pagination="pagination">
+        <PropertyColumn Property="g => g.Name" Sortable="true" Title="Name" />
+        <PropertyColumn Property="g => g.Direction.Name" Sortable="true" Title="Direction" />
+        <TemplateColumn Title="Study Days">
+            @DisplayStudyDays(context.StudyDays)
+        </TemplateColumn>
+        <Paginator State="pagination" />
+        <TemplateColumn Context="g">
+            <a href="@($"groups/edit?id={g.Id}")">Edit</a> |
+            <a href="@($"groups/details?id={g.Id}")">Details</a> |
+            <a href="@($"groups/delete?id={g.Id}")">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+
+<style>
+    .group-grid table {
+        table-layout: fixed;
+        width: 100%;
+    }
+    .group-grid th:nth-child(1), .group-grid td:nth-child(1) { width: 25%; } /* Name */
+    .group-grid th:nth-child(2), .group-grid td:nth-child(2) { width: 25%; } /* Direction */
+    .group-grid th:nth-child(3), .group-grid td:nth-child(3) { width: 25%; } /* Study Days */
+    .group-grid th:nth-child(4), .group-grid td:nth-child(4) { width: 25%; } /* Actions */
+</style>
 
 @code {
-    private BlazorAcademyHWContext context = default!;
     private List<Groups> groupsList = new();
     private List<Directions> directions = new();
     private int selectedDirectionId = 0;
+    private PaginationState pagination = new() { ItemsPerPage = 4 };
 
     protected override async Task OnInitializedAsync()
     {
-        context = DbFactory.CreateDbContext();
-        directions = await context.Directions.ToListAsync();
+        await LoadDirections();
         await LoadGroups();
+    }
+
+    private async Task LoadDirections()
+    {
+        using var ctx = DbFactory.CreateDbContext();
+        directions = await ctx.Directions.AsNoTracking().ToListAsync();
     }
 
     private async Task LoadGroups()
     {
-        var query = context.Groups.Include(g => g.Direction).AsQueryable();
+        using var ctx = DbFactory.CreateDbContext();
+        var query = ctx.Groups.Include(g => g.Direction).AsNoTracking().AsQueryable();
+
         if (selectedDirectionId != 0)
             query = query.Where(g => g.DirectionId == selectedDirectionId);
+
         groupsList = await query.ToListAsync();
-        StateHasChanged();   // обязательно для QuickGrid
+        await pagination.SetCurrentPageIndexAsync(0);
     }
 
     private async Task OnDirectionChanged(ChangeEventArgs e)
@@ -75,6 +95,4 @@
                          .Where(x => x != null);
         return string.Join(',', names);
     }
-
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }

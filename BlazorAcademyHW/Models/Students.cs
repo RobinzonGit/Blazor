@@ -8,6 +8,7 @@ namespace BlazorAcademyHW.Models
         public int Id { get; set; }
 
         [Required]
+        
         public string LastName { get; set; } = string.Empty;
 
         [Required]

@@ -41,21 +41,27 @@
 </div>
 
 
+<div class="teacher-grid" style="overflow-x: auto;">
+    <QuickGrid Class="table table-striped" Items="teachersList.AsQueryable()" Pagination="pagination">
+        ...
+    </QuickGrid>
+</div>
+
 <style>
     .teacher-grid table {
         table-layout: fixed;
-        width: 2050px; /* сумма ширин всех столбцов */
+        width: 100%;
     }
-    .teacher-grid th:nth-child(1), .teacher-grid td:nth-child(1) { width: 200px; } /* LastName */
-    .teacher-grid th:nth-child(2), .teacher-grid td:nth-child(2) { width: 200px; } /* FirstName */
-    .teacher-grid th:nth-child(3), .teacher-grid td:nth-child(3) { width: 250px; } /* MiddleName */
-    .teacher-grid th:nth-child(4), .teacher-grid td:nth-child(4) { width: 100px; } /* Age */
-    .teacher-grid th:nth-child(5), .teacher-grid td:nth-child(5) { width: 250px; } /* Email */
-    .teacher-grid th:nth-child(6), .teacher-grid td:nth-child(6) { width: 200px; } /* Phone */
-    .teacher-grid th:nth-child(7), .teacher-grid td:nth-child(7) { width: 100px; } /* Photo */
-    .teacher-grid th:nth-child(8), .teacher-grid td:nth-child(8) { width: 200px; } /* WorkSince */
-    .teacher-grid th:nth-child(9), .teacher-grid td:nth-child(9) { width: 100px; } /* Rate */
-    .teacher-grid th:nth-child(10), .teacher-grid td:nth-child(10) { width: 220px; } /* Actions */
+    .teacher-grid th:nth-child(1), .teacher-grid td:nth-child(1) { width: 10%; }  /* LastName */
+    .teacher-grid th:nth-child(2), .teacher-grid td:nth-child(2) { width: 10%; }  /* FirstName */
+    .teacher-grid th:nth-child(3), .teacher-grid td:nth-child(3) { width: 11%; }  /* MiddleName */
+    .teacher-grid th:nth-child(4), .teacher-grid td:nth-child(4) { width:  6%; }  /* Age */
+    .teacher-grid th:nth-child(5), .teacher-grid td:nth-child(5) { width: 13%; }  /* Email */
+    .teacher-grid th:nth-child(6), .teacher-grid td:nth-child(6) { width:  9%; }  /* Phone */
+    .teacher-grid th:nth-child(7), .teacher-grid td:nth-child(7) { width:  6%; }  /* Photo */
+    .teacher-grid th:nth-child(8), .teacher-grid td:nth-child(8) { width:  8%; }  /* WorkSince */
+    .teacher-grid th:nth-child(9), .teacher-grid td:nth-child(9) { width:  6%; }  /* Rate */
+    .teacher-grid th:nth-child(10), .teacher-grid td:nth-child(10) { width: 11%; } /* Actions */
 </style>
 
 @code {
