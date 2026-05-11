@@ -38,7 +38,7 @@
         <PropertyColumn Property="students => students.LastName" Sortable="true" Title="LastName" />
         <PropertyColumn Property="students => students.FirstName" Sortable="true" Title="FirstName" />
         <PropertyColumn Property="students => students.MiddleName" Sortable="true" Title="MiddleName" />
-        <PropertyColumn Property="students => students.DateOfBirth" Sortable="true" Title="DateOfBirth" />
+        <PropertyColumn Property="students => students.Age" Sortable="true" Title="Age" />
         <PropertyColumn Property="students => students.Email" Sortable="true" Title="Email" />
         <PropertyColumn Property="students => students.Phone" Sortable="true" Title="Phone" />
         <PropertyColumn Property="students => students.Group.Direction.Name" Sortable="true" Title="Direction" />
@@ -53,29 +53,28 @@
             }
         </TemplateColumn>
         <PropertyColumn Property="students => students.Group.Name" Sortable="true" Title="Group" />
-        <Paginator State="pagination" />
         <TemplateColumn Context="students">
             <a href="@($"students/edit?id={students.Id}")">Edit</a> |
             <a href="@($"students/details?id={students.Id}")">Details</a> |
             <a href="@($"students/delete?id={students.Id}")">Delete</a>
         </TemplateColumn>
+        <Paginator State="pagination" />
     </QuickGrid>
 </div>
-
 
 <style>
     .student-grid table {
         table-layout: fixed;
         width: 2050px; /* сумма ширин всех столбцов */
     }
-    .student-grid th:nth-child(1), .student-grid td:nth-child(1) { width: 200px; } /* LastName */
+    .student-grid th:nth-child(1), .student-grid td:nth-child(1) { width: 150px; } /* LastName */
     .student-grid th:nth-child(2), .student-grid td:nth-child(2) { width: 200px; } /* FirstName */
-    .student-grid th:nth-child(3), .student-grid td:nth-child(3) { width: 250px; } /* MiddleName */
-    .student-grid th:nth-child(4), .student-grid td:nth-child(4) { width: 200px; } /* DateOfBirth */
+    .student-grid th:nth-child(3), .student-grid td:nth-child(3) { width: 200px; } /* MiddleName */
+    .student-grid th:nth-child(4), .student-grid td:nth-child(4) { width: 100px; } /* Age */
     .student-grid th:nth-child(5), .student-grid td:nth-child(5) { width: 200px; } /* Email */
     .student-grid th:nth-child(6), .student-grid td:nth-child(6) { width: 200px; } /* Phone */
-    .student-grid th:nth-child(7), .student-grid td:nth-child(7) { width: 200px; } /* Direction */
-    .student-grid th:nth-child(8), .student-grid td:nth-child(8) { width: 200px; }  /* Photo */
+    .student-grid th:nth-child(7), .student-grid td:nth-child(7) { width: 400px; } /* Direction */
+    .student-grid th:nth-child(8), .student-grid td:nth-child(8) { width: 200px; } /* Photo */
     .student-grid th:nth-child(9), .student-grid td:nth-child(9) { width: 200px; } /* Group */
     .student-grid th:nth-child(10), .student-grid td:nth-child(10) { width: 200px; } /* Actions */
 </style>

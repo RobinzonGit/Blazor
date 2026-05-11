@@ -1,56 +1,79 @@
 ﻿@page "/teachers"
 @using Microsoft.EntityFrameworkCore
+@using System.Linq
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BlazorAcademyHW.Models
 @using BlazorAcademyHW.Data
-@implements IAsyncDisposable
 @inject IDbContextFactory<BlazorAcademyHW.Data.BlazorAcademyHWContext> DbFactory
 @rendermode InteractiveServer
 
 <PageTitle>Index</PageTitle>
+<h1>Teachers</h1>
+<p><a href="teachers/create">Create New</a></p>
 
-<h1>Index</h1>
+<div class="teacher-grid" style="overflow-x: auto;">
+    <QuickGrid Class="table table-striped" Items="teachersList.AsQueryable()" Pagination="pagination">
+        <PropertyColumn Property="teachers => teachers.LastName" Sortable="true" Title="LastName" />
+        <PropertyColumn Property="teachers => teachers.FirstName" Sortable="true" Title="FirstName" />
+        <PropertyColumn Property="teachers => teachers.MiddleName" Sortable="true" Title="MiddleName" />
+        <PropertyColumn Property="teachers => teachers.Age" Sortable="true" Title="Age" />
+        <PropertyColumn Property="teachers => teachers.Email" Sortable="true" Title="Email" />
+        <PropertyColumn Property="teachers => teachers.Phone" Sortable="true" Title="Phone" />
+        <TemplateColumn Title="Photo">
+            @if (context.PhotoData != null)
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(context.PhotoData)" style="max-width:50px;max-height:50px;" />
+            }
+            else
+            {
+                <span>Нет фото</span>
+            }
+        </TemplateColumn>
+        <PropertyColumn Property="teachers => teachers.WorkSince" Sortable="true" Title="WorkSince" />
+        <PropertyColumn Property="teachers => teachers.Rate" Sortable="true" Title="Rate" />
+        <Paginator State="pagination" />
+        <TemplateColumn Context="teachers">
+            <a href="@($"teachers/edit?id={teachers.Id}")">Edit</a> |
+            <a href="@($"teachers/details?id={teachers.Id}")">Details</a> |
+            <a href="@($"teachers/delete?id={teachers.Id}")">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
 
-<p>
-    <a href="teachers/create">Create New</a>
-</p>
 
-<QuickGrid Class="table" Items="teachersList.AsQueryable()">
-    <PropertyColumn Property="teachers => teachers.LastName" />
-    <PropertyColumn Property="teachers => teachers.FirstName" />
-    <PropertyColumn Property="teachers => teachers.MiddleName" />
-    <PropertyColumn Property="teachers => teachers.DateOfBirth" />
-    <PropertyColumn Property="teachers => teachers.Email" />
-    <PropertyColumn Property="teachers => teachers.Phone" />
-    <TemplateColumn Title="Photo">
-        @if (context.PhotoData != null)
-        {
-            <img src="data:image/jpeg;base64,@Convert.ToBase64String(context.PhotoData)" style="max-width:50px;max-height:50px;" />
-        }
-        else
-        {
-            <span>Нет фото</span>
-        }
-    </TemplateColumn>
-    <PropertyColumn Property="teachers => teachers.WorkSince" />
-    <PropertyColumn Property="teachers => teachers.Rate" />
-
-    <TemplateColumn Context="teachers">
-        <a href="@($"teachers/edit?id={teachers.Id}")">Edit</a> |
-        <a href="@($"teachers/details?id={teachers.Id}")">Details</a> |
-        <a href="@($"teachers/delete?id={teachers.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
+<style>
+    .teacher-grid table {
+        table-layout: fixed;
+        width: 2050px; /* сумма ширин всех столбцов */
+    }
+    .teacher-grid th:nth-child(1), .teacher-grid td:nth-child(1) { width: 200px; } /* LastName */
+    .teacher-grid th:nth-child(2), .teacher-grid td:nth-child(2) { width: 200px; } /* FirstName */
+    .teacher-grid th:nth-child(3), .teacher-grid td:nth-child(3) { width: 250px; } /* MiddleName */
+    .teacher-grid th:nth-child(4), .teacher-grid td:nth-child(4) { width: 100px; } /* Age */
+    .teacher-grid th:nth-child(5), .teacher-grid td:nth-child(5) { width: 250px; } /* Email */
+    .teacher-grid th:nth-child(6), .teacher-grid td:nth-child(6) { width: 200px; } /* Phone */
+    .teacher-grid th:nth-child(7), .teacher-grid td:nth-child(7) { width: 100px; } /* Photo */
+    .teacher-grid th:nth-child(8), .teacher-grid td:nth-child(8) { width: 200px; } /* WorkSince */
+    .teacher-grid th:nth-child(9), .teacher-grid td:nth-child(9) { width: 100px; } /* Rate */
+    .teacher-grid th:nth-child(10), .teacher-grid td:nth-child(10) { width: 220px; } /* Actions */
+</style>
 
 @code {
-    private BlazorAcademyHWContext context = default!;
     private List<Teachers> teachersList = new();
+    private PaginationState pagination = new() { ItemsPerPage = 6 };
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        context = DbFactory.CreateDbContext();
-        teachersList = context.Teachers.ToList();
+        await LoadTeachers();
     }
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+    private async Task LoadTeachers()
+    {
+        using var ctx = DbFactory.CreateDbContext();
+        teachersList = await ctx.Teachers
+            .AsNoTracking()
+            .ToListAsync();
+
+        await pagination.SetCurrentPageIndexAsync(0);
+    }
 }
