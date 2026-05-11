@@ -15,11 +15,13 @@
 }
 else
 {
-    <div class="row">
-        <div class="col-md-4">
-            <EditForm Model="Students" OnValidSubmit="UpdateStudents" FormName="editStudent">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
+    <EditForm Model="Students" OnValidSubmit="UpdateStudents" FormName="editStudent">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row">
+            <!-- Левая колонка: поля ввода -->
+            <div class="col-md-8">
                 <input type="hidden" name="Students.Id" value="@Students.Id" />
                 <div class="mb-3">
                     <span class="text-danger">*</span>
@@ -48,47 +50,45 @@ else
                     <InputText id="phone" @bind-Value="Students.Phone" class="form-control" />
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Group</label>
+                    <select @bind="Students.GroupId" class="form-select">
+                        <option value="">-- Select Group --</option>
+                        @foreach (var grp in groups)
+                        {
+                            <option value="@grp.Id">@grp.Name (@grp.Direction?.Name)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!-- Правая колонка: фото и управление -->
+            <div class="col-md-4 text-center">
+                <div class="mb-3">
                     <label class="form-label">Current Photo</label>
                     @if (Students.Photo != null)
                     {
-                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(Students.Photo)" style="max-width:150px;max-height:150px;" />
-                        <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="DeletePhoto">Delete Photo</button>
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(Students.Photo)"
+                             style="max-width:100%; max-height:250px; border-radius:8px;" />
+                        <button type="button" class="btn btn-danger btn-sm mt-2" @onclick="DeletePhoto">Delete Photo</button>
                     }
                     else
                     {
-                        <p>No photo</p>
+                        <div class="border rounded p-5 bg-light d-inline-block">
+                            <p class="text-muted">No photo</p>
+                        </div>
                     }
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Change Photo</label>
                     <InputFile OnChange="OnPhotoUpload" />
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Group</label>
-                    <select @bind="Students.GroupId" class="form-select">
-                        <option value="">-- Select Group --</option>
-                        @foreach (var grp in groups)
-                        {
-                            <option value="@grp.Id">@grp.Name</option>
-                        }
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Direction</label>
-                    <select @bind="Students.GroupId" class="form-select">
-                        <option value="">-- Select Direction --</option>
-                        @foreach (var grp in groups)
-                        {
-                            <option value="@grp.Id">@grp.Direction?.Name</option>
-                        }
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Save</button>
-            </EditForm>
+                <button type="submit" class="btn btn-primary mt-3">Save</button>
+                <a href="/students" class="btn btn-secondary mt-3">Cancel</a>
+            </div>
         </div>
-    </div>
+    </EditForm>
 }
-<div><a href="/students">Back to List</a></div>
+<div class="mt-3"><a href="/students">Back to List</a></div>
 
 @code {
     [SupplyParameterFromQuery] private int Id { get; set; }
