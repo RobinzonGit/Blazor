@@ -41,7 +41,7 @@
         <PropertyColumn Property="students => students.Age" Sortable="true" Title="Age" />
         <PropertyColumn Property="students => students.Email" Sortable="true" Title="Email" />
         <PropertyColumn Property="students => students.Phone" Sortable="true" Title="Phone" />
-        <PropertyColumn Property="students => students.Group.Direction.Name" Sortable="true" Title="Direction" />
+        <PropertyColumn Property="students => students.DirectionName" Sortable="true" Title="Direction" />
         <TemplateColumn Title="Photo">
             @if (context.Photo != null)
             {
@@ -52,7 +52,7 @@
                 <span>Нет фото</span>
             }
         </TemplateColumn>
-        <PropertyColumn Property="students => students.Group.Name" Sortable="true" Title="Group" />
+        <PropertyColumn Property="students => students.GroupName" Sortable="true" Title="Group" />
         <TemplateColumn Context="students">
             <a href="@($"students/edit?id={students.Id}")">Edit</a> |
             <a href="@($"students/details?id={students.Id}")">Details</a> |
@@ -65,18 +65,18 @@
 <style>
     .student-grid table {
         table-layout: fixed;
-        width: 100%;               /* теперь ширина по родителю */
+        width: 100%;
     }
-    .student-grid th:nth-child(1), .student-grid td:nth-child(1) { width: 9%; }  /* LastName */
+    .student-grid th:nth-child(1), .student-grid td:nth-child(1) { width: 10%; }  /* LastName */
     .student-grid th:nth-child(2), .student-grid td:nth-child(2) { width: 10%; }  /* FirstName */
-    .student-grid th:nth-child(3), .student-grid td:nth-child(3) { width: 11%; }  /* MiddleName */
-    .student-grid th:nth-child(4), .student-grid td:nth-child(4) { width:  6%; }  /* Age */
-    .student-grid th:nth-child(5), .student-grid td:nth-child(5) { width: 11%; }  /* Email */
-    .student-grid th:nth-child(6), .student-grid td:nth-child(6) { width: 9%; }  /* Phone */
-    .student-grid th:nth-child(7), .student-grid td:nth-child(7) { width: 15%; }  /* Direction */
-    .student-grid th:nth-child(8), .student-grid td:nth-child(8) { width:  10%; }  /* Photo */
+    .student-grid th:nth-child(3), .student-grid td:nth-child(3) { width: 12%; }  /* MiddleName */
+    .student-grid th:nth-child(4), .student-grid td:nth-child(4) { width:  8%; }  /* Age */
+    .student-grid th:nth-child(5), .student-grid td:nth-child(5) { width: 13%; }  /* Email */
+    .student-grid th:nth-child(6), .student-grid td:nth-child(6) { width: 10%; }  /* Phone */
+    .student-grid th:nth-child(7), .student-grid td:nth-child(7) { width: 10%; }  /* Direction */
+    .student-grid th:nth-child(8), .student-grid td:nth-child(8) { width:  7%; }  /* Photo */
     .student-grid th:nth-child(9), .student-grid td:nth-child(9) { width:  8%; }  /* Group */
-    .student-grid th:nth-child(10), .student-grid td:nth-child(10) { width: 10%; } /* Actions */
+    .student-grid th:nth-child(10), .student-grid td:nth-child(10) { width: 12%; } /* Actions */
 </style>
 
 @code {
