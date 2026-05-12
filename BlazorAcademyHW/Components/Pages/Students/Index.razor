@@ -11,7 +11,7 @@
 <h1>Students</h1>
 <p><a href="students/create">Create New</a></p>
 
-<div class="mb-3 d-flex gap-2 align-items-center">
+<div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
     <label class="form-label mb-0">Filter by direction:</label>
     <select value="@selectedDirectionId" @onchange="OnDirectionChanged" class="form-select" style="width:220px;">
         <option value="0">-- All Directions --</option>
@@ -31,6 +31,17 @@
     </select>
 
     <button class="btn btn-secondary" @onclick="ApplyFilter">Apply</button>
+</div>
+
+<div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+    <label class="form-label mb-0">Last Name:</label>
+    <input type="text" value="@lastNameFilter" @oninput="OnLastNameInput" class="form-control" style="width:180px;" placeholder="Search last name" />
+
+    <label class="form-label mb-0">First Name:</label>
+    <input type="text" value="@firstNameFilter" @oninput="OnFirstNameInput" class="form-control" style="width:180px;" placeholder="Search first name" />
+
+    <label class="form-label mb-0">Middle Name:</label>
+    <input type="text" value="@middleNameFilter" @oninput="OnMiddleNameInput" class="form-control" style="width:180px;" placeholder="Search middle name" />
 </div>
 
 <div class="student-grid" style="overflow-x: auto;">
@@ -79,7 +90,6 @@
     .student-grid th:nth-child(9), .student-grid td:nth-child(9) { width:  8%; }  /* Group */
     .student-grid th:nth-child(10), .student-grid td:nth-child(10) { width: 12%; } /* Actions */
 
-    /* Исправление наложения текста */
     .student-grid td {
         word-wrap: break-word;
         overflow-wrap: break-word;
@@ -95,6 +105,11 @@
     private int selectedDirectionId = 0;
     private int selectedGroupId = 0;
     private PaginationState pagination = new() { ItemsPerPage = 8 };
+
+    // Новые строковые поля для фильтрации
+    private string lastNameFilter = "";
+    private string firstNameFilter = "";
+    private string middleNameFilter = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,16 +134,27 @@
             .AsNoTracking()
             .AsQueryable();
 
+        // Фильтрация по направлению
         if (selectedDirectionId != 0)
             query = query.Where(s => s.Group != null && s.Group.DirectionId == selectedDirectionId);
 
+        // Фильтрация по группе
         if (selectedGroupId != 0)
             query = query.Where(s => s.GroupId == selectedGroupId);
+
+        // Фильтрация по тексту (нечувствительная к регистру, частичное совпадение)
+        if (!string.IsNullOrWhiteSpace(lastNameFilter))
+            query = query.Where(s => s.LastName.ToLower().Contains(lastNameFilter.ToLower()));
+        if (!string.IsNullOrWhiteSpace(firstNameFilter))
+            query = query.Where(s => s.FirstName.ToLower().Contains(firstNameFilter.ToLower()));
+        if (!string.IsNullOrWhiteSpace(middleNameFilter))
+            query = query.Where(s => s.MiddleName != null && s.MiddleName.ToLower().Contains(middleNameFilter.ToLower()));
 
         studentsList = await query.ToListAsync();
         await pagination.SetCurrentPageIndexAsync(0);
     }
 
+    // Методы, которые вызываются при изменении текстовых полей и селектов
     private async Task OnDirectionChanged(ChangeEventArgs e)
     {
         selectedDirectionId = int.Parse(e.Value?.ToString() ?? "0");
@@ -144,4 +170,28 @@
         selectedGroupId = int.Parse(e.Value?.ToString() ?? "0");
         await ApplyFilter();
     }
+    private async Task OnLastNameInput(ChangeEventArgs e)
+{
+    lastNameFilter = e.Value?.ToString() ?? "";
+    await ApplyFilter();
+}
+
+private async Task OnFirstNameInput(ChangeEventArgs e)
+{
+    firstNameFilter = e.Value?.ToString() ?? "";
+    await ApplyFilter();
+}
+
+private async Task OnMiddleNameInput(ChangeEventArgs e)
+{
+    middleNameFilter = e.Value?.ToString() ?? "";
+    await ApplyFilter();
+}
+
+    // Привязка oninput автоматически вызывает ApplyFilter при каждом изменении текста
+    // Так как мы используем @bind:event="oninput", методы set вызываются при каждом вводе символа,
+    // и мы можем перехватить это в сеттерах, но проще подписаться на событие в разметке.
+    // Вместо этого используем отдельный метод, который будет вызываться по @oninput.
+    // Перепишем разметку: вместо @bind:event="oninput" используем @oninput.
+    // Легче обновить код, заменив текстовые поля на @oninput с ручным обновлением переменных.
 }
