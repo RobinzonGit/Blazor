@@ -8,52 +8,50 @@
 @rendermode InteractiveServer
 
 <PageTitle>Index</PageTitle>
-<h1>Students</h1>
-<p><a href="students/create">Create New</a></p>
+<h1>Студенты</h1>
+<p><a href="students/create">Создать новый</a></p>
 
 <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-    <label class="form-label mb-0">Filter by direction:</label>
+    <label class="form-label mb-0">Фильтр по направлению:</label>
     <select value="@selectedDirectionId" @onchange="OnDirectionChanged" class="form-select" style="width:220px;">
-        <option value="0">-- All Directions --</option>
+        <option value="0">-- Все направления --</option>
         @foreach (var d in directions)
         {
             <option value="@d.Id">@d.Name</option>
         }
     </select>
 
-    <label class="form-label mb-0">Filter by group:</label>
+    <label class="form-label mb-0">Фильтр по группе:</label>
     <select value="@selectedGroupId" @onchange="OnGroupChanged" class="form-select" style="width:220px;">
-        <option value="0">-- All Groups --</option>
+        <option value="0">-- Все группы --</option>
         @foreach (var g in filteredGroups)
         {
             <option value="@g.Id">@g.Name</option>
         }
-    </select>
-
-    <button class="btn btn-secondary" @onclick="ApplyFilter">Apply</button>
+    </select>   
 </div>
 
 <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-    <label class="form-label mb-0">Last Name:</label>
-    <input type="text" value="@lastNameFilter" @oninput="OnLastNameInput" class="form-control" style="width:180px;" placeholder="Search last name" />
+    <label class="form-label mb-0">Фамилия:</label>
+    <input type="text" value="@lastNameFilter" @oninput="OnLastNameInput" class="form-control" style="width:180px;" placeholder="-Введите Фамилию-" />
 
-    <label class="form-label mb-0">First Name:</label>
-    <input type="text" value="@firstNameFilter" @oninput="OnFirstNameInput" class="form-control" style="width:180px;" placeholder="Search first name" />
+    <label class="form-label mb-0">Имя:</label>
+    <input type="text" value="@firstNameFilter" @oninput="OnFirstNameInput" class="form-control" style="width:180px;" placeholder="-Введите Имя-" />
 
-    <label class="form-label mb-0">Middle Name:</label>
-    <input type="text" value="@middleNameFilter" @oninput="OnMiddleNameInput" class="form-control" style="width:180px;" placeholder="Search middle name" />
+    <label class="form-label mb-0">Отчество:</label>
+    <input type="text" value="@middleNameFilter" @oninput="OnMiddleNameInput" class="form-control" style="width:180px;" placeholder="-Введите Отчество-" />
 </div>
 
 <div class="student-grid" style="overflow-x: auto;">
     <QuickGrid Class="table table-striped" Items="studentsList.AsQueryable()" Pagination="pagination">
-        <PropertyColumn Property="students => students.LastName" Sortable="true" Title="LastName" />
-        <PropertyColumn Property="students => students.FirstName" Sortable="true" Title="FirstName" />
-        <PropertyColumn Property="students => students.MiddleName" Sortable="true" Title="MiddleName" />
-        <PropertyColumn Property="students => students.Age" Sortable="true" Title="Age" />
+        <PropertyColumn Property="students => students.LastName" Sortable="true" Title="Фамилия" />
+        <PropertyColumn Property="students => students.FirstName" Sortable="true" Title="Имя" />
+        <PropertyColumn Property="students => students.MiddleName" Sortable="true" Title="Отчество" />
+        <PropertyColumn Property="students => students.Age" Sortable="true" Title="Возраст" />
         <PropertyColumn Property="students => students.Email" Sortable="true" Title="Email" />
-        <PropertyColumn Property="students => students.Phone" Sortable="true" Title="Phone" />
-        <PropertyColumn Property="students => students.DirectionName" Sortable="true" Title="Direction" />
-        <TemplateColumn Title="Photo">
+        <PropertyColumn Property="students => students.Phone" Sortable="true" Title="Телефон" />
+        <PropertyColumn Property="students => students.DirectionName" Sortable="true" Title="Направление" />
+        <TemplateColumn Title="Фото">
             @if (context.Photo != null)
             {
                 <img src="data:image/jpeg;base64,@Convert.ToBase64String(context.Photo)" style="max-width:50px;max-height:50px;" />
@@ -63,12 +61,12 @@
                 <span>Нет фото</span>
             }
         </TemplateColumn>
-        <PropertyColumn Property="students => students.GroupName" Sortable="true" Title="Group" />
+        <PropertyColumn Property="students => students.GroupName" Sortable="true" Title="Группа" />
         <Paginator State="pagination" />
         <TemplateColumn Context="students">
-            <a href="@($"students/edit?id={students.Id}")">Edit</a> |
-            <a href="@($"students/details?id={students.Id}")">Details</a> |
-            <a href="@($"students/delete?id={students.Id}")">Delete</a>
+            <a href="@($"students/edit?id={students.Id}")">Изменить</a> |
+            <a href="@($"students/details?id={students.Id}")">Подробно</a> |
+            <a href="@($"students/delete?id={students.Id}")">Удалить</a>
         </TemplateColumn>
     </QuickGrid>
 </div>

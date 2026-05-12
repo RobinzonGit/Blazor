@@ -8,29 +8,29 @@
 @rendermode InteractiveServer
 
 <PageTitle>Index</PageTitle>
-<h1>Teachers</h1>
-<p><a href="teachers/create">Create New</a></p>
+<h1>Преподаватели</h1>
+<p><a href="teachers/create">Создать новый</a></p>
 
 <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-    <label class="form-label mb-0">Last Name:</label>
-    <input type="text" value="@lastNameFilter" @oninput="OnLastNameInput" class="form-control" style="width:180px;" placeholder="Search last name" />
+    <label class="form-label mb-0">Фамилия:</label>
+    <input type="text" value="@lastNameFilter" @oninput="OnLastNameInput" class="form-control" style="width:180px;" placeholder="-Введите Фамилию-" />
 
-    <label class="form-label mb-0">First Name:</label>
-    <input type="text" value="@firstNameFilter" @oninput="OnFirstNameInput" class="form-control" style="width:180px;" placeholder="Search first name" />
+    <label class="form-label mb-0">Имя:</label>
+    <input type="text" value="@firstNameFilter" @oninput="OnFirstNameInput" class="form-control" style="width:180px;" placeholder="-Введите Имя-" />
 
-    <label class="form-label mb-0">Middle Name:</label>
-    <input type="text" value="@middleNameFilter" @oninput="OnMiddleNameInput" class="form-control" style="width:180px;" placeholder="Search middle name" />
+    <label class="form-label mb-0">Отчество:</label>
+    <input type="text" value="@middleNameFilter" @oninput="OnMiddleNameInput" class="form-control" style="width:180px;" placeholder="-Введите Отчество-" />
 </div>
 
 <div class="teacher-grid" style="overflow-x: auto;">
     <QuickGrid Class="table table-striped" Items="teachersList.AsQueryable()" Pagination="pagination">
-        <PropertyColumn Property="teachers => teachers.LastName" Sortable="true" Title="LastName" />
-        <PropertyColumn Property="teachers => teachers.FirstName" Sortable="true" Title="FirstName" />
-        <PropertyColumn Property="teachers => teachers.MiddleName" Sortable="true" Title="MiddleName" />
-        <PropertyColumn Property="teachers => teachers.Age" Sortable="true" Title="Age" />
+        <PropertyColumn Property="teachers => teachers.LastName" Sortable="true" Title="Фамилия" />
+        <PropertyColumn Property="teachers => teachers.FirstName" Sortable="true" Title="Имя" />
+        <PropertyColumn Property="teachers => teachers.MiddleName" Sortable="true" Title="Отчество" />
+        <PropertyColumn Property="teachers => teachers.Age" Sortable="true" Title="Возраст" />
         <PropertyColumn Property="teachers => teachers.Email" Sortable="true" Title="Email" />
-        <PropertyColumn Property="teachers => teachers.Phone" Sortable="true" Title="Phone" />
-        <TemplateColumn Title="Photo">
+        <PropertyColumn Property="teachers => teachers.Phone" Sortable="true" Title="Телефон" />
+        <TemplateColumn Title="Фото">
             @if (context.PhotoData != null)
             {
                 <img src="data:image/jpeg;base64,@Convert.ToBase64String(context.PhotoData)" style="max-width:50px;max-height:50px;" />
@@ -40,13 +40,13 @@
                 <span>Нет фото</span>
             }
         </TemplateColumn>
-        <PropertyColumn Property="teachers => teachers.WorkSince" Sortable="true" Title="WorkSince" />
-        <PropertyColumn Property="teachers => teachers.Rate" Sortable="true" Title="Rate" />
+        <PropertyColumn Property="teachers => teachers.WorkSince" Sortable="true" Title="Дата начала работы" />
+        <PropertyColumn Property="teachers => teachers.Rate" Sortable="true" Title="Ставка" />
         <Paginator State="pagination" />
         <TemplateColumn Context="teachers">
-            <a href="@($"teachers/edit?id={teachers.Id}")">Edit</a> |
-            <a href="@($"teachers/details?id={teachers.Id}")">Details</a> |
-            <a href="@($"teachers/delete?id={teachers.Id}")">Delete</a>
+            <a href="@($"teachers/edit?id={teachers.Id}")">Изменить</a> |
+            <a href="@($"teachers/details?id={teachers.Id}")">Подробно</a> |
+            <a href="@($"teachers/delete?id={teachers.Id}")">Удалить</a>
         </TemplateColumn>
     </QuickGrid>
 </div>

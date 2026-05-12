@@ -7,7 +7,7 @@
 
 <PageTitle>Edit</PageTitle>
 <h1>Edit</h1>
-<h2>Students</h2>
+<h2>Студенты</h2>
 <hr />
 @if (Students is null)
 {
@@ -25,20 +25,20 @@ else
                 <input type="hidden" name="Students.Id" value="@Students.Id" />
                 <div class="mb-3">
                     <span class="text-danger">*</span>
-                    <label for="lastname" class="form-label">LastName:</label>
+                    <label for="lastname" class="form-label">Фамилия:</label>
                     <InputText id="lastname" @bind-Value="Students.LastName" class="form-control" />
                 </div>
                 <div class="mb-3">
                     <span class="text-danger">*</span>
-                    <label for="firstname" class="form-label">FirstName:</label>
+                    <label for="firstname" class="form-label">Имя:</label>
                     <InputText id="firstname" @bind-Value="Students.FirstName" class="form-control" />
                 </div>
                 <div class="mb-3">
-                    <label for="middlename" class="form-label">MiddleName:</label>
+                    <label for="middlename" class="form-label">Отчество:</label>
                     <InputText id="middlename" @bind-Value="Students.MiddleName" class="form-control" />
                 </div>
                 <div class="mb-3">
-                    <label for="dateofbirth" class="form-label">DateOfBirth:</label>
+                    <label for="dateofbirth" class="form-label">Дата рождения:</label>
                     <InputDate id="dateofbirth" @bind-Value="Students.DateOfBirth" class="form-control" />
                 </div>
                 <div class="mb-3">
@@ -46,13 +46,13 @@ else
                     <InputText id="email" @bind-Value="Students.Email" class="form-control" />
                 </div>
                 <div class="mb-3">
-                    <label for="phone" class="form-label">Phone:</label>
+                    <label for="phone" class="form-label">Телефон:</label>
                     <InputText id="phone" @bind-Value="Students.Phone" class="form-control" />
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Group</label>
+                    <label class="form-label">Группа</label>
                     <select @bind="Students.GroupId" class="form-select">
-                        <option value="">-- Select Group --</option>
+                        <option value="">-Выберите группу-</option>
                         @foreach (var grp in groups)
                         {
                             <option value="@grp.Id">@grp.Name (@grp.Direction?.Name)</option>
@@ -64,31 +64,31 @@ else
             <!-- Правая колонка: фото и управление -->
             <div class="col-md-4 text-center">
                 <div class="mb-3">
-                    <label class="form-label">Current Photo</label>
+                    <label class="form-label">Текущее фото</label>
                     @if (Students.Photo != null)
                     {
                         <img src="data:image/jpeg;base64,@Convert.ToBase64String(Students.Photo)"
                              style="max-width:100%; max-height:250px; border-radius:8px;" />
-                        <button type="button" class="btn btn-danger btn-sm mt-2" @onclick="DeletePhoto">Delete Photo</button>
+                        <button type="button" class="btn btn-danger btn-sm mt-2" @onclick="DeletePhoto">Удалить</button>
                     }
                     else
                     {
                         <div class="border rounded p-5 bg-light d-inline-block">
-                            <p class="text-muted">No photo</p>
+                            <p class="text-muted">Нет Фото</p>
                         </div>
                     }
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Change Photo</label>
+                    <label class="form-label">Загрузите фото</label>
                     <InputFile OnChange="OnPhotoUpload" />
                 </div>
-                <button type="submit" class="btn btn-primary mt-3">Save</button>
-                <a href="/students" class="btn btn-secondary mt-3">Cancel</a>
+                <button type="submit" class="btn btn-primary mt-3">Сохранить</button>
+                <a href="/students" class="btn btn-secondary mt-3">Отменить</a>
             </div>
         </div>
     </EditForm>
 }
-<div class="mt-3"><a href="/students">Back to List</a></div>
+<div class="mt-3"><a href="/students">Вернутся к списку</a></div>
 
 @code {
     [SupplyParameterFromQuery] private int Id { get; set; }
