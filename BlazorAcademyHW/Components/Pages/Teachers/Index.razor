@@ -11,6 +11,17 @@
 <h1>Teachers</h1>
 <p><a href="teachers/create">Create New</a></p>
 
+<div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+    <label class="form-label mb-0">Last Name:</label>
+    <input type="text" value="@lastNameFilter" @oninput="OnLastNameInput" class="form-control" style="width:180px;" placeholder="Search last name" />
+
+    <label class="form-label mb-0">First Name:</label>
+    <input type="text" value="@firstNameFilter" @oninput="OnFirstNameInput" class="form-control" style="width:180px;" placeholder="Search first name" />
+
+    <label class="form-label mb-0">Middle Name:</label>
+    <input type="text" value="@middleNameFilter" @oninput="OnMiddleNameInput" class="form-control" style="width:180px;" placeholder="Search middle name" />
+</div>
+
 <div class="teacher-grid" style="overflow-x: auto;">
     <QuickGrid Class="table table-striped" Items="teachersList.AsQueryable()" Pagination="pagination">
         <PropertyColumn Property="teachers => teachers.LastName" Sortable="true" Title="LastName" />
@@ -57,7 +68,6 @@
     .teacher-grid th:nth-child(9), .teacher-grid td:nth-child(9) { width:  6%; }  /* Rate */
     .teacher-grid th:nth-child(10), .teacher-grid td:nth-child(10) { width: 11%; } /* Actions */
 
-    /* Исправление наложения текста */
     .teacher-grid td {
         word-wrap: break-word;
         overflow-wrap: break-word;
@@ -68,6 +78,10 @@
 @code {
     private List<Teachers> teachersList = new();
     private PaginationState pagination = new() { ItemsPerPage = 6 };
+
+    private string lastNameFilter = "";
+    private string firstNameFilter = "";
+    private string middleNameFilter = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -82,5 +96,39 @@
             .ToListAsync();
 
         await pagination.SetCurrentPageIndexAsync(0);
+    }
+
+    private async Task ApplyFilter()
+    {
+        using var ctx = DbFactory.CreateDbContext();
+        var query = ctx.Teachers.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(lastNameFilter))
+            query = query.Where(t => t.LastName.ToLower().Contains(lastNameFilter.ToLower()));
+        if (!string.IsNullOrWhiteSpace(firstNameFilter))
+            query = query.Where(t => t.FirstName.ToLower().Contains(firstNameFilter.ToLower()));
+        if (!string.IsNullOrWhiteSpace(middleNameFilter))
+            query = query.Where(t => t.MiddleName != null && t.MiddleName.ToLower().Contains(middleNameFilter.ToLower()));
+
+        teachersList = await query.ToListAsync();
+        await pagination.SetCurrentPageIndexAsync(0);
+    }
+
+    private async Task OnLastNameInput(ChangeEventArgs e)
+    {
+        lastNameFilter = e.Value?.ToString() ?? "";
+        await ApplyFilter();
+    }
+
+    private async Task OnFirstNameInput(ChangeEventArgs e)
+    {
+        firstNameFilter = e.Value?.ToString() ?? "";
+        await ApplyFilter();
+    }
+
+    private async Task OnMiddleNameInput(ChangeEventArgs e)
+    {
+        middleNameFilter = e.Value?.ToString() ?? "";
+        await ApplyFilter();
     }
 }
