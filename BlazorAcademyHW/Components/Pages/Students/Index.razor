@@ -53,14 +53,15 @@
             }
         </TemplateColumn>
         <PropertyColumn Property="students => students.GroupName" Sortable="true" Title="Group" />
+        <Paginator State="pagination" />
         <TemplateColumn Context="students">
             <a href="@($"students/edit?id={students.Id}")">Edit</a> |
             <a href="@($"students/details?id={students.Id}")">Details</a> |
             <a href="@($"students/delete?id={students.Id}")">Delete</a>
         </TemplateColumn>
-        <Paginator State="pagination" />
     </QuickGrid>
 </div>
+
 
 <style>
     .student-grid table {
@@ -77,6 +78,13 @@
     .student-grid th:nth-child(8), .student-grid td:nth-child(8) { width:  7%; }  /* Photo */
     .student-grid th:nth-child(9), .student-grid td:nth-child(9) { width:  8%; }  /* Group */
     .student-grid th:nth-child(10), .student-grid td:nth-child(10) { width: 12%; } /* Actions */
+
+    /* Исправление наложения текста */
+    .student-grid td {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
 </style>
 
 @code {

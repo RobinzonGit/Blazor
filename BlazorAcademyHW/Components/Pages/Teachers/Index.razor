@@ -41,12 +41,6 @@
 </div>
 
 
-<div class="teacher-grid" style="overflow-x: auto;">
-    <QuickGrid Class="table table-striped" Items="teachersList.AsQueryable()" Pagination="pagination">
-        ...
-    </QuickGrid>
-</div>
-
 <style>
     .teacher-grid table {
         table-layout: fixed;
@@ -62,6 +56,13 @@
     .teacher-grid th:nth-child(8), .teacher-grid td:nth-child(8) { width:  8%; }  /* WorkSince */
     .teacher-grid th:nth-child(9), .teacher-grid td:nth-child(9) { width:  6%; }  /* Rate */
     .teacher-grid th:nth-child(10), .teacher-grid td:nth-child(10) { width: 11%; } /* Actions */
+
+    /* Исправление наложения текста */
+    .teacher-grid td {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
 </style>
 
 @code {
